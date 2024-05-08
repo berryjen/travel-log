@@ -9,11 +9,13 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const countriesRouter = require('./routes/countries');
 const visitsRouter = require('./routes/visits');
+const { newVisits } = require('./routes/visitsHelpers');
+
+console.log(visitsRouter, newVisits);
 const tokensRouter = require('./routes/tokens');
 
 // routes views
 const renderViewRouter = require('./routes-views/visits');
-
 const tokensModels = require('./models/tokens');
 
 const app = express();
@@ -47,6 +49,14 @@ app.use(`${apiPrefix}/visits`, visitsRouter);
 app.use(`${apiPrefix}/tokens`, tokensRouter);
 
 app.use(renderViewRouter);
+
+app.get(
+  '/new-visits',
+  passport.authenticate('bearer', { session: false }),
+  (req, res) => {
+    newVisits(req, res);
+  },
+);
 
 function errorHandler(err, req, res, next) {
   const data = {

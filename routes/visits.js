@@ -14,6 +14,7 @@ router.get(
   passport.authenticate('bearer', { session: false }),
   visitsController.get,
 );
+// this post route is for new visits
 router.post(
   '/',
   passport.authenticate('bearer', { session: false }),
