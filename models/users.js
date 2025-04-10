@@ -30,6 +30,12 @@ exports.get_by_id = async (id) => {
   return user;
 };
 
+// get_by_name finds and returns a user based on user.name
+exports.get_by_name = async (name) => {
+  const user = await db('users').where({ name }).first(['id', 'name']);
+  return user;
+}
+
 // create saves a new user in the data store.
 exports.create = async (name) => {
   try {

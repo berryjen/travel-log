@@ -71,3 +71,6 @@ function errorHandler(err, req, res, next) {
 app.use(errorHandler);
 
 module.exports = app;
+
+
+// need to track if the bearer token is being passed to the backend from the front end 
