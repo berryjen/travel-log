@@ -8,6 +8,7 @@ const BearerStrategy = require('passport-http-bearer').Strategy;
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const countriesRouter = require('./routes/countries');
+const authenticationRouter = require('./routes/authentication');
 const visitsRouter = require('./routes/visits');
 const { newVisits } = require('./routes/visitsHelpers');
 
@@ -47,6 +48,7 @@ app.use(`${apiPrefix}/users`, usersRouter);
 app.use(`${apiPrefix}/countries`, countriesRouter);
 app.use(`${apiPrefix}/visits`, visitsRouter);
 app.use(`${apiPrefix}/tokens`, tokensRouter);
+app.use(`${apiPrefix}/authentication`, authenticationRouter);
 
 app.use(renderViewRouter);
 
