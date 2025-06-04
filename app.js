@@ -9,10 +9,8 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const countriesRouter = require('./routes/countries');
 const authenticationRouter = require('./routes/authentication');
+const authenticationRegister = require('./routes/authentication/register');
 const visitsRouter = require('./routes/visits');
-const { newVisits } = require('./routes/visitsHelpers');
-
-console.log(visitsRouter, newVisits);
 const tokensRouter = require('./routes/tokens');
 
 // routes views
@@ -35,7 +33,6 @@ passport.use(
   }),
 );
 
-app.set('view engine', 'ejs');
 app.use(logger('dev', { skip: () => process.env.NODE_ENV === 'test' }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -49,16 +46,8 @@ app.use(`${apiPrefix}/countries`, countriesRouter);
 app.use(`${apiPrefix}/visits`, visitsRouter);
 app.use(`${apiPrefix}/tokens`, tokensRouter);
 app.use(`${apiPrefix}/authentication`, authenticationRouter);
-
+app.use(`${apiPrefix}/authentication/register`, authenticationRegister);
 app.use(renderViewRouter);
-
-app.get(
-  '/new-visits',
-  passport.authenticate('bearer', { session: false }),
-  (req, res) => {
-    newVisits(req, res);
-  },
-);
 
 function errorHandler(err, req, res, next) {
   const data = {

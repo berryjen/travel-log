@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-// const authenticationController = require('../controllers/authentication');
+const authenticationController = require('../controllers/authentication');
 
 const router = express.Router();
 
@@ -11,3 +11,5 @@ router.post('/register', async (req, res) => {
 });
 
 module.exports = router;
+
+
