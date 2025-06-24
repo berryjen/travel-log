@@ -5,7 +5,7 @@
 const db = require('../db/db');
 const bcrypt = require('bcryptjs');
 
-const registerUser = async (req, res) => {
+const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
@@ -47,5 +47,5 @@ const registerUser = async (req, res) => {
 };
 
 module.exports = {
-    registerUser
+    register
 };

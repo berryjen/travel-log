@@ -4,11 +4,7 @@ const authenticationController = require('../controllers/authentication');
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
-    const {userName, userEmail, userPassword} = req.body
-    console.log(userName, userEmail, userPassword);
-    return res.status(200).json({message:"success"});
-});
+router.post('/register', authenticationController.register);
 
 module.exports = router;
 

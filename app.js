@@ -9,7 +9,6 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const countriesRouter = require('./routes/countries');
 const authenticationRouter = require('./routes/authentication');
-const authenticationRegister = require('./routes/authentication/register');
 const visitsRouter = require('./routes/visits');
 const tokensRouter = require('./routes/tokens');
 
@@ -46,7 +45,7 @@ app.use(`${apiPrefix}/countries`, countriesRouter);
 app.use(`${apiPrefix}/visits`, visitsRouter);
 app.use(`${apiPrefix}/tokens`, tokensRouter);
 app.use(`${apiPrefix}/authentication`, authenticationRouter);
-app.use(`${apiPrefix}/authentication/register`, authenticationRegister);
+
 app.use(renderViewRouter);
 
 function errorHandler(err, req, res, next) {
