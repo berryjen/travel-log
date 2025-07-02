@@ -7,5 +7,3 @@ const router = express.Router();
 router.post('/register', authenticationController.register);
 
 module.exports = router;
-
-
