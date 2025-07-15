@@ -7,11 +7,11 @@ const db = require('../db/db');
 
 const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { userName, userEmail, userPassword } = req.body;
 
     // Check if user exists using Knex
-    const existingUser = await db('users')
-      .where({ email })
+    const existingUser = await db('user_name')
+      .where({ userEmail })
       .first();
 
     if (existingUser) {
@@ -22,18 +22,18 @@ const register = async (req, res) => {
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(userPassword, salt);
 
     // Create new user using Knex
     const [newUser] = await db('users')
       .insert({
-        username,
-        email,
-        password: hashedPassword,
+        userName,
+        userEmail,
+        userPassword: hashedPassword,
       })
-      .returning(['id', 'username', 'email']);
+      .returning(['id', 'userName', 'userEmail']);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'User created successfully',
       user: newUser,
     });

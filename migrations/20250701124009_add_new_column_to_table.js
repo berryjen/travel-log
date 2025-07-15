@@ -4,12 +4,12 @@
  */
 exports.up = async function up(knex) {
   await knex.schema.table('users', (table) => {
-    table.string('user_name', 128).notNullable.unique();
-    table.string('user_email', 128).notNullable.unique();
-    table.string('user_password', 128).notNullable().unique();
+    table.string('user_name', 128).notNullable().defaultTo('').unique();
+    table.string('user_email', 128).notNullable().defaultTo('').unique();
+    table.string('user_password', 128).notNullable().defaultTo('').unique();
   });
   return knex('users').insert([
-    { user_name: 'jen', user_email: 'jen@hotmail.com' },
+    { user_name: 'jen', user_email: 'jen@hotmail.com', user_password: '12' },
   ]);
 };
 
