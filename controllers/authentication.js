@@ -7,12 +7,12 @@ const db = require('../db/db');
 
 const register = async (req, res) => {
   try {
-    const { userName, userEmail, userPassword } = req.body;
-
+    const { userEmail, userPassword, name } = req.body;
+    console.log('Registering user:', { reqBody: req.body });
     // Check if user exists using Knex
-    const existingUser = await db('user_name')
+    const existingUser = await db('users')
       .where({ userEmail })
-      .first();
+      .first('id');
 
     if (existingUser) {
       return res.status(409).json({
@@ -27,11 +27,11 @@ const register = async (req, res) => {
     // Create new user using Knex
     const [newUser] = await db('users')
       .insert({
-        userName,
+        name,
         userEmail,
         userPassword: hashedPassword,
       })
-      .returning(['id', 'userName', 'userEmail']);
+      .returning(['id', 'userEmail']);
 
     return res.status(201).json({
       message: 'User created successfully',
@@ -39,8 +39,8 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
-      error: 'An error occurred during registration',
+    return res.status(500).json({
+      error: `An error occurred during registration: ${error.name}: ${error.message}`,
     });
   }
 };

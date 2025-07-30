@@ -1,13 +1,21 @@
-const knex = require('knex');
+const Knex = require('knex');
+const knexStringcase = require('knex-stringcase').default;
+
+console.log(knexStringcase);
 const config = require('../knexfile');
 
-let db = null;
+let knexConfig = null;
 if (process.env.NODE_ENV === 'test') {
-  db = knex(config.test);
+  knexConfig = config.test;
 } else if (process.env.NODE_ENV === 'production') {
-  db = knex(config.production);
+  knexConfig = config.production;
 } else {
-  db = knex(config.development);
+  knexConfig = config.development;
 }
+const knexConfigWithStringCase = knexStringcase();
+console.log(knexConfigWithStringCase);
+const newConfig = { ...knexConfig, ...knexConfigWithStringCase };
+console.log(newConfig);
+const db = Knex(newConfig);
 
 module.exports = db;
