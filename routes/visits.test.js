@@ -182,22 +182,22 @@ describe('GET /new-visits', () => {
   });
 });
 
-describe('GET /view-visit', () => {
-  it('should respond with status 200 with valid token', async () => {
-    const res = await request(app).get('/new-visits/?access_token=ABC123');
-    // console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-    expect(res.statusCode).toEqual(200);
-    expect(res.text).toContain('departureTime');
-    expect(res.text).toContain('country');
-    expect(res.text).not.toBe(null);
-  });
-  it('should respond with status 401 with invalid token', async () => {
-    const res = await request(app).get('/api/visits?access_token=ABC450');
-    expect(res.statusCode).toEqual(401);
-    expect(res.body.status).toEqual(401);
-    expect(res.body).toHaveProperty('message');
-  });
-});
+// describe('GET /view-visit', () => {
+//   it('should respond with status 200 with valid token', async () => {
+//     const res = await request(app).get('/new-visits/?access_token=ABC123');
+//     // console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%%%%');
+//     expect(res.statusCode).toEqual(200);
+//     expect(res.text).toContain('departureTime');
+//     expect(res.text).toContain('country');
+//     expect(res.text).not.toBe(null);
+//   });
+//   it('should respond with status 401 with invalid token', async () => {
+//     const res = await request(app).get('/api/visits?access_token=ABC450');
+//     expect(res.statusCode).toEqual(401);
+//     expect(res.body.status).toEqual(401);
+//     expect(res.body).toHaveProperty('message');
+//   });
+// });
 // describe('POST /newvisits', () => {
 //   const visit = {
 //     user_id: 1,

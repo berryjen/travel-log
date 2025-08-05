@@ -13,7 +13,6 @@ const visitsRouter = require('./routes/visits');
 const tokensRouter = require('./routes/tokens');
 
 // routes views
-const renderViewRouter = require('./routes-views/visits');
 const tokensModels = require('./models/tokens');
 
 const app = express();
@@ -45,8 +44,6 @@ app.use(`${apiPrefix}/countries`, countriesRouter);
 app.use(`${apiPrefix}/visits`, visitsRouter);
 app.use(`${apiPrefix}/tokens`, tokensRouter);
 app.use(`${apiPrefix}/authentication`, authenticationRouter);
-
-app.use(renderViewRouter);
 
 function errorHandler(err, req, res, next) {
   const data = {
