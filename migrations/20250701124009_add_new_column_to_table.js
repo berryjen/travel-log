@@ -2,7 +2,7 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-export async function up(knex) {
+exports.up = async function up(knex) {
   await knex.schema.table('users', (table) => {
     table.string('user_email', 128);
     table.string('user_password', 128);
@@ -22,14 +22,14 @@ export async function up(knex) {
   await knex.schema.alterTable('users', (table) => {
     table.string('user_email', 128).notNullable().unique().alter();
   });
-}
+};
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-export async function down(knex) {
+exports.down = async function down(knex) {
   return knex.schema.table('users', (table) => {
     table.dropColumn('user_email');
     table.dropColumn('user_password');
   });
-}
+};
