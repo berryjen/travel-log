@@ -9,14 +9,14 @@ exports.seed = async function seed(knex) {
     {
       id: 1,
       name: 'jen',
-      email: 'jen@hotmail.com',
-      password: '123321',
+      user_email: 'jen@hotmail.com',
+      user_password: '123321',
     },
     {
       id: 2,
       name: 'bill',
-      email: 'bill@hotmail.com',
-      password: '234432',
+      user_email: 'bill@hotmail.com',
+      user_password: '234432',
     },
   ]);
 };

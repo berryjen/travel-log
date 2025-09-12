@@ -14,7 +14,7 @@ afterAll(async () => {
 describe('POST /register', () => {
   it('should register a new user', async () => {
     const res = await request(app)
-      .post('/register')
+      .post('/api/authentication/register')
       .send({
         name: 'testUser',
         userEmail: 'test@example.com',
@@ -29,7 +29,7 @@ describe('POST /register', () => {
 
   it('should not register an existing user', async () => {
     const res = await request(app)
-      .post('/register')
+      .post('/api/authentication/register')
       .send({
         name: 'jen',
         userEmail: 'jen@hotmail.com',
