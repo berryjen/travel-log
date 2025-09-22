@@ -15,13 +15,13 @@ exports.seed = async function seed(knex) {
     {
       id: 1,
       name: 'jen',
-      user_email: 'jen@hotmail.com',
+      user_email: `jen_${Date.now()}@hotmail.com`,
       user_password: hashedPassword1,
     },
     {
       id: 2,
       name: 'bill',
-      user_email: 'bill@hotmail.com',
+      user_email: `bill_${Date.now()}@hotmail.com`,
       user_password: hashedPassword2,
     },
   ]);

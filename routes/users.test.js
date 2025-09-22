@@ -1,4 +1,5 @@
 const request = require('supertest');
+const { afterEach } = require('node:test');
 const app = require('../app');
 const db = require('../db/db');
 const users = require('../models/users');
@@ -19,6 +20,17 @@ afterAll(async () => {
 });
 
 describe('GET /api/users', () => {
+  let createdUserId;
+  afterEach(async () => {
+    if (createdUserId) {
+      try {
+        await db('users').where('id', createdUserId).del();
+      } catch (error) {
+        console.error(`Error deleting user with id ${createdUserId}:`, error);
+      }
+      createdUserId = null;
+    }
+  });
   it('should respond with an array of users with valid token', async () => {
     const res = await request(app).get('/api/users?access_token=DEF456');
 
@@ -60,7 +72,7 @@ describe('GET /api/users/2', () => {
 
 describe('POST /api/users', () => {
   it('should respond with a new user', async () => {
-    const userName = 'pie';
+    const userName = `pie_${Date.now()}`;
     const res = await request(app).post('/api/users').send({ name: userName });
     expect(res.statusCode).toEqual(201);
     expect(typeof res.body.id).toEqual('number');
@@ -75,7 +87,8 @@ describe('POST /api/users', () => {
   });
 
   it('should create the user in the DB', async () => {
-    const newUser = await users.create('cake');
+    const userName = `cake_${Date.now()}`;
+    const newUser = await users.create(userName);
     const res = await request(app).get(
       `/api/users/${newUser.id}/?access_token=ABC123`,
     );
@@ -87,7 +100,7 @@ describe('POST /api/users', () => {
   });
 
   it('should not create the same user twice', async () => {
-    const name = 'chocolate';
+    const name = `chocolate_${Date.now()}`;
     await users.create(name);
     const res = await request(app).post('/api/users').send({ name });
     expect(res.statusCode).toEqual(400);
