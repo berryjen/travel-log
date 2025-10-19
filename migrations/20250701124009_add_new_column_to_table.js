@@ -20,14 +20,16 @@ exports.up = async function up(knex) {
     }),
   );
   await knex.schema.alterTable('users', (table) => {
-    table.string('user_email', 128).notNullable().unique().alter();
+    table.string('user_email', 128).notNullable().alter();
   });
+  await knex.raw('CREATE UNIQUE INDEX IF NOT EXISTS users_user_email_unique ON users (user_email)');
 };
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.down = async function down(knex) {
+  await knex.raw('DROP INDEX IF EXISTS users_user_email_unique');
   return knex.schema.table('users', (table) => {
     table.dropColumn('user_email');
     table.dropColumn('user_password');
