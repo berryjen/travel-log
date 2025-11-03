@@ -1,3 +1,4 @@
 {
-    "deepseek.apiKey": "sk-109ba0ecfa83419ba0a8499a25030344"
+    "deepseek.apiKey": "sk-109ba0ecfa83419ba0a8499a25030344",
+    "liveServer.settings.port": 5501
 }

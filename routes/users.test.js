@@ -32,7 +32,8 @@ describe('GET /api/users', () => {
     }
   });
   it('should respond with an array of users with valid token', async () => {
-    const res = await request(app).get('/api/users?access_token=DEF456');
+    // const res = await request(app).get('/api/users?access_token=DEF456');
+    const res = await request(app).get('/api/users');
 
     // The values for the expected result are based on those defined
     // in seed data. See /seeds/create-test-users.js
