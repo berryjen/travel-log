@@ -30,8 +30,9 @@ const router = express.Router();
 // registerRoute(router, '/:id', usersController.get);
 // registerRoute(router, '/', 'post', usersController.create);
 
-router.get('/', passport.authenticate('bearer', { session: false }), usersController.list);
-router.get('/:id', passport.authenticate('bearer', { session: false }), usersController.get);
+router.get('/', passport.authenticate('local', { session: false }), usersController.list);
+router.get('/:id', passport.authenticate('local', { session: false }), usersController.get);
 router.post('/', usersController.create);
+router.post('/login', passport.authenticate('local', { session: false, failWithError: true }), usersController.login);
 
 module.exports = router;

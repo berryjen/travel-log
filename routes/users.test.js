@@ -8,9 +8,20 @@ const users = require('../models/users');
 // running tests. If NODE_ENV is set to `test` then the database used
 // during testing will be held in memory for the duration of the tests
 // and then discarded.
+
+// let authToken = '';
+const jenBasicAuth = `Basic ${Buffer.from('jen:123321').toString('base64')}`;
+
 beforeAll(async () => {
   await db.migrate.latest();
   await db.seed.run();
+
+  // const loginResponse = await request(app)
+  //   .post('/api/login')
+  //   .send({ name: 'jen', password: '123321' });
+
+  // authToken = loginResponse.body.token;
+
 });
 
 // After tests have completed, destroy the database as the test data is no
@@ -31,10 +42,10 @@ describe('GET /api/users', () => {
       createdUserId = null;
     }
   });
-  it('should respond with an array of users with valid token', async () => {
-    // const res = await request(app).get('/api/users?access_token=DEF456');
-    const res = await request(app).get('/api/users');
-
+  it('should respond with an array of users with valid password', async () => {
+    console.log('before response??', 'hello');
+    const res = await request(app).get('/api/users').set('Authorization', jenBasicAuth);
+    console.log('response', JSON.stringify(res));
     // The values for the expected result are based on those defined
     // in seed data. See /seeds/create-test-users.js
     expect(res.statusCode).toEqual(200);
@@ -44,8 +55,9 @@ describe('GET /api/users', () => {
     expect(res.body[0]).toHaveProperty('name');
     expect(res.body[0].name).toEqual('jen');
   });
-  it('should not respond with an array of users with invalid token', async () => {
-    const res = await request(app).get('/api/users?access_token=DEF457');
+  it('should not respond with an array of users with invalid password', async () => {
+    // const res = await request(app).get('/api/users?access_token=DEF457');
+    const res = await request(app).get('/api/users');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
@@ -53,7 +65,7 @@ describe('GET /api/users', () => {
 });
 
 describe('GET /api/users/2', () => {
-  it('should respond with a single user with valid token', async () => {
+  it('should respond with a single user with valid password', async () => {
     const res = await request(app).get('/api/users/2/?access_token=ABC123');
     // The values for the expected result are based on those defined
     // in seed data. See /seeds/create-test-users.js
@@ -63,7 +75,7 @@ describe('GET /api/users/2', () => {
     expect(res.body).toHaveProperty('name');
     expect(res.body.name).toEqual('bill');
   });
-  it('should not respond with a single user with invalid token', async () => {
+  it('should not respond with a single user with invalid password', async () => {
     const res = await request(app).get('/api/users/2/?access_token=ABC124');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);

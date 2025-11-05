@@ -15,6 +15,8 @@ const tokensRouter = require('./routes/tokens');
 // routes views
 const tokensModels = require('./models/tokens');
 
+require('./passport-config');
+
 const app = express();
 
 passport.use(

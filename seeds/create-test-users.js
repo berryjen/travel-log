@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
@@ -10,13 +11,13 @@ exports.seed = async function seed(knex) {
       id: 1,
       name: 'jen',
       user_email: 'jen@hotmail.com',
-      user_password: '123321',
+      user_password: await bcrypt.hash('123321', 10),
     },
     {
       id: 2,
       name: 'bill',
       user_email: 'bill@hotmail.com',
-      user_password: '234432',
+      user_password: await bcrypt.hash('234432', 10),
     },
   ]);
 };
