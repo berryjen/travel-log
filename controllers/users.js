@@ -28,9 +28,8 @@ exports.create = async (req, res, next) => {
 };
 
 exports.login = async (req, res) => {
-  console.log('login request', JSON.stringify(req), 'login Respnose', JSON.stringify(res));
   return res.json({
     message: 'Login successful',
     user: req.user,
   });
-};
+}

@@ -18,7 +18,7 @@ passport.use(new LocalStrategy(
         return done(null, false, { message: 'Incorrect username.' });
       }
 
-      const match = await bcrypt.compare(password, user.user_password);
+      const match = await bcrypt.compare(password, user.userPassword);
 
       console.log('password match', match);
       if (!match) {

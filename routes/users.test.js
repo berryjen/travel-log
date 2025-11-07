@@ -10,18 +10,23 @@ const users = require('../models/users');
 // and then discarded.
 
 // let authToken = '';
-const jenBasicAuth = `Basic ${Buffer.from('jen:123321').toString('base64')}`;
+let agent;
 
 beforeAll(async () => {
   await db.migrate.latest();
   await db.seed.run();
 
-  // const loginResponse = await request(app)
-  //   .post('/api/login')
-  //   .send({ name: 'jen', password: '123321' });
+  agent = request.agent(app);
 
+  const loginResponse = await request(app)
+    .post('/api/users/login')
+    .send({ name: 'jen', password: '123321' });
+
+  console.log('loginResponse.statusCode', loginResponse.statusCode);
+
+  expect(loginResponse.statusCode).toBe(200);
+  // expect(loginResponse.statusCode).toBe(200);
   // authToken = loginResponse.body.token;
-
 });
 
 // After tests have completed, destroy the database as the test data is no
@@ -42,9 +47,8 @@ describe('GET /api/users', () => {
       createdUserId = null;
     }
   });
-  it('should respond with an array of users with valid password', async () => {
-    console.log('before response??', 'hello');
-    const res = await request(app).get('/api/users').set('Authorization', jenBasicAuth);
+  it.only('should respond with an array of users with valid password', async () => {
+    const res = await agent.get('/api/users');
     console.log('response', JSON.stringify(res));
     // The values for the expected result are based on those defined
     // in seed data. See /seeds/create-test-users.js
@@ -57,7 +61,7 @@ describe('GET /api/users', () => {
   });
   it('should not respond with an array of users with invalid password', async () => {
     // const res = await request(app).get('/api/users?access_token=DEF457');
-    const res = await request(app).get('/api/users');
+    const res = await agent.get('/api/users');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');

@@ -1,3 +1,4 @@
+const session = require('express-session');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -11,6 +12,7 @@ const countriesRouter = require('./routes/countries');
 const authenticationRouter = require('./routes/authentication');
 const visitsRouter = require('./routes/visits');
 const tokensRouter = require('./routes/tokens');
+const usersModel = require('./models/users');
 
 // routes views
 const tokensModels = require('./models/tokens');
@@ -18,6 +20,30 @@ const tokensModels = require('./models/tokens');
 require('./passport-config');
 
 const app = express();
+
+app.use(session({
+  secret: 'your_strong_secret_key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { maxAge: 60 * 60 * 1000 }, // 1 hour
+}));
+
+app.use(passport.initialize()); // <- initialises the authentication module https://stackoverflow.com/questions/46644366/what-is-passport-initialize-nodejs-express
+app.use(passport.session()); // <- https://www.passportjs.org/concepts/authentication/sessions/
+
+passport.serializeUser((user, done) => {
+  // store the user id in the session
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await usersModel.get_by_id(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
 
 passport.use(
   new BearerStrategy(async (token, done) => {
@@ -32,6 +58,15 @@ passport.use(
     return done(null, token, { scope: 'all', user_id: user.user_id });
   }),
 );
+
+// function ensureSession(req, res, next) {
+//   if (req && req.isAuthenticated && req.isAuthenticated()) {
+//     return next();
+//   }
+//   return res.status(401).json({ status: 401, message: 'Unauthorized' });
+// }
+
+// app.use(ensureSession);
 
 app.use(logger('dev', { skip: () => process.env.NODE_ENV === 'test' }));
 app.use(express.json());
@@ -52,6 +87,7 @@ function errorHandler(err, req, res, next) {
     status: err.status || 500,
     message: err.message,
   };
+  console.log('request.data', data);
   res.status(err.status || 500);
   res.json(data);
   next();

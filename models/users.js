@@ -32,7 +32,8 @@ exports.get_by_id = async (id) => {
 
 // get_by_name finds and returns a user based on user.name
 exports.get_by_name = async (name) => {
-  const user = await db('users').where({ name }).first(['id', 'name']);
+  // TODO: you might not want to return the user_password
+  const user = await db('users').where({ name }).first(['id', 'name', 'user_password']);
   return user;
 };
 
