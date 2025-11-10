@@ -4,7 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const passport = require('passport');
-const BearerStrategy = require('passport-http-bearer').Strategy;
+// const BearerStrategy = require('passport-http-bearer').Strategy;
 // api routes
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -15,7 +15,7 @@ const tokensRouter = require('./routes/tokens');
 const usersModel = require('./models/users');
 
 // routes views
-const tokensModels = require('./models/tokens');
+// const tokensModels = require('./models/tokens');
 
 require('./passport-config');
 
@@ -30,43 +30,6 @@ app.use(session({
 
 app.use(passport.initialize()); // <- initialises the authentication module https://stackoverflow.com/questions/46644366/what-is-passport-initialize-nodejs-express
 app.use(passport.session()); // <- https://www.passportjs.org/concepts/authentication/sessions/
-
-passport.serializeUser((user, done) => {
-  // store the user id in the session
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await usersModel.get_by_id(id);
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-passport.use(
-  new BearerStrategy(async (token, done) => {
-    const user = await tokensModels.get_user_by_token(token);
-    if (user === undefined) {
-      // console.log('invalid id', user);
-      const err = new Error('Inavlid token');
-      err.status = 401;
-      return done(err);
-    }
-    // console.log('valid id', user);
-    return done(null, token, { scope: 'all', user_id: user.user_id });
-  }),
-);
-
-// function ensureSession(req, res, next) {
-//   if (req && req.isAuthenticated && req.isAuthenticated()) {
-//     return next();
-//   }
-//   return res.status(401).json({ status: 401, message: 'Unauthorized' });
-// }
-
-// app.use(ensureSession);
 
 app.use(logger('dev', { skip: () => process.env.NODE_ENV === 'test' }));
 app.use(express.json());

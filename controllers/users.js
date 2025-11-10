@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const usersModel = require('../models/users');
 
 exports.list = async (req, res) => {
+  // const users = await usersModel.get_all(req.body.name, req.body.user_password);
   const users = await usersModel.get_all();
   return res.json(users);
 };
@@ -27,9 +28,7 @@ exports.create = async (req, res, next) => {
   }
 };
 
-exports.login = async (req, res) => {
-  return res.json({
-    message: 'Login successful',
-    user: req.user,
-  });
-}
+exports.login = async (req, res) => res.json({
+  message: 'Login successful',
+  user: req.user,
+});

@@ -9,7 +9,6 @@ const users = require('../models/users');
 // during testing will be held in memory for the duration of the tests
 // and then discarded.
 
-// let authToken = '';
 let agent;
 
 beforeAll(async () => {
@@ -18,17 +17,26 @@ beforeAll(async () => {
 
   agent = request.agent(app);
 
-  const loginResponse = await request(app)
+  const loginResponse = await agent
     .post('/api/users/login')
     .send({ name: 'jen', password: '123321' });
 
   console.log('loginResponse.statusCode', loginResponse.statusCode);
 
   expect(loginResponse.statusCode).toBe(200);
-  // expect(loginResponse.statusCode).toBe(200);
-  // authToken = loginResponse.body.token;
 });
 
+let inValidAgent;
+
+beforeAll(async () => {
+  inValidAgent = request.agent(app);
+
+  const loginResponse = await inValidAgent
+    .post('/api/users/login')
+    .send({ name: 'bill', password: 'wrongpassword' });
+  console.log('nonValid loginResponse.statusCode', loginResponse.statusCode);
+  expect(loginResponse.statusCode).toBe(401);
+});
 // After tests have completed, destroy the database as the test data is no
 // longer needed.
 afterAll(async () => {
@@ -47,7 +55,8 @@ describe('GET /api/users', () => {
       createdUserId = null;
     }
   });
-  it.only('should respond with an array of users with valid password', async () => {
+  it('should respond with an array of users with valid password', async () => {
+    // const res = await agent.get('/api/users?name=jen&password=123321');
     const res = await agent.get('/api/users');
     console.log('response', JSON.stringify(res));
     // The values for the expected result are based on those defined
@@ -61,7 +70,7 @@ describe('GET /api/users', () => {
   });
   it('should not respond with an array of users with invalid password', async () => {
     // const res = await request(app).get('/api/users?access_token=DEF457');
-    const res = await agent.get('/api/users');
+    const res = await inValidAgent.get('/api/users');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
@@ -70,7 +79,8 @@ describe('GET /api/users', () => {
 
 describe('GET /api/users/2', () => {
   it('should respond with a single user with valid password', async () => {
-    const res = await request(app).get('/api/users/2/?access_token=ABC123');
+    const res = await agent.get('/api/users/2');
+    console.log('response 2', JSON.stringify(res));
     // The values for the expected result are based on those defined
     // in seed data. See /seeds/create-test-users.js
     expect(res.statusCode).toEqual(200);
@@ -80,7 +90,7 @@ describe('GET /api/users/2', () => {
     expect(res.body.name).toEqual('bill');
   });
   it('should not respond with a single user with invalid password', async () => {
-    const res = await request(app).get('/api/users/2/?access_token=ABC124');
+    const res = await inValidAgent.get('/api/users/2');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
@@ -90,7 +100,8 @@ describe('GET /api/users/2', () => {
 describe('POST /api/users', () => {
   it('should respond with a new user', async () => {
     const userName = `pie_${Date.now()}`;
-    const res = await request(app).post('/api/users').send({ name: userName });
+    const res = await agent.post('/api/users').send({ name: userName });
+    console.log('create user response', JSON.stringify(res));
     expect(res.statusCode).toEqual(201);
     expect(typeof res.body.id).toEqual('number');
     expect(res.body).toHaveProperty('id');
@@ -119,7 +130,7 @@ describe('POST /api/users', () => {
   it('should not create the same user twice', async () => {
     const name = `chocolate_${Date.now()}`;
     await users.create(name);
-    const res = await request(app).post('/api/users').send({ name });
+    const res = await agent(app).post('/api/users').send({ name });
     expect(res.statusCode).toEqual(400);
     expect(res.body).toHaveProperty('status');
     expect(res.body.status).toEqual(400);

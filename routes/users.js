@@ -30,9 +30,18 @@ const router = express.Router();
 // registerRoute(router, '/:id', usersController.get);
 // registerRoute(router, '/', 'post', usersController.create);
 
-router.get('/', passport.authenticate('local', { session: false }), usersController.list);
-router.get('/:id', passport.authenticate('local', { session: false }), usersController.get);
-router.post('/', usersController.create);
-router.post('/login', passport.authenticate('local', { session: false, failWithError: true }), usersController.login);
+const ensureAuth = (req, res, next) =>
+  req.isAuthenticated()
+    ? next()
+    : res.status(401).json({ status: 401, message: 'Unauthorized' });
 
+
+router.get('/', ensureAuth, usersController.list);
+router.get('/:id', ensureAuth, usersController.get);
+router.post('/', ensureAuth, usersController.create);
+
+// /login <- gives you the session cookie with local strategy (manual)
+// ensureAuth means you have the cookie from the agent (automatic) but just checking the user is authenticated
+router.post('/login', passport.authenticate('local'), usersController.login);
+// passport.authenticate('local', { session: false, failWithError: true })
 module.exports = router;
