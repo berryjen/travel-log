@@ -18,7 +18,14 @@ passport.use(new LocalStrategy(
         return done(null, false, { message: 'Incorrect username.' });
       }
 
-      const match = await bcrypt.compare(password, user.user_password);
+      // knex-stringcase may transform column names, try both
+      const userPassword = user.user_password || user.userPassword;
+      
+      if (!userPassword) {
+        return done(new Error('User password not found'));
+      }
+
+      const match = await bcrypt.compare(password, userPassword);
 
       console.log('password match', match);
       if (!match) {
@@ -32,5 +39,17 @@ passport.use(new LocalStrategy(
   },
 ));
 
-// This part is crucial for making the configuration available
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await usersModel.get_by_id(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
+});
+
 module.exports = passport;

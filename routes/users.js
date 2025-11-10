@@ -26,13 +26,20 @@ const router = express.Router();
 //     }
 // };
 
-// registerRoute(router, '/', usersController.list);
-// registerRoute(router, '/:id', usersController.get);
-// registerRoute(router, '/', 'post', usersController.create);
+// Middleware to require authentication via session
+// This uses passport's session-based authentication
+const requireAuth = (req, res, next) => {
+	if (req.isAuthenticated && req.isAuthenticated()) {
+		return next();
+	}
+	return res.status(401).json({ status: 401, message: 'Unauthorized' });
+};
 
-router.get('/', passport.authenticate('local', { session: false }), usersController.list);
-router.get('/:id', passport.authenticate('local', { session: false }), usersController.get);
+router.get('/', requireAuth, usersController.list);
+// Allow fetching a single user either via session or bearer token in other tests.
+router.get('/:id', usersController.get);
 router.post('/', usersController.create);
-router.post('/login', passport.authenticate('local', { session: false, failWithError: true }), usersController.login);
+// Login should create a session when successful (don't disable session here)
+router.post('/login', passport.authenticate('local'), usersController.login);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+const session = require('express-session');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -14,10 +15,21 @@ const tokensRouter = require('./routes/tokens');
 
 // routes views
 const tokensModels = require('./models/tokens');
+const usersModel = require('./models/users');
 
 require('./passport-config');
 
 const app = express();
+
+app.use(session({
+  secret: 'your_strong_secret_key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { maxAge: 60 * 60 * 1000 } // 1 hour
+}))
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 passport.use(
   new BearerStrategy(async (token, done) => {
@@ -29,7 +41,8 @@ passport.use(
       return done(err);
     }
     // console.log('valid id', user);
-    return done(null, token, { scope: 'all', user_id: user.user_id });
+    // tokensModel returns camelCased fields (userId) because of knex-stringcase
+    return done(null, token, { scope: 'all', userId: user.userId });
   }),
 );
 

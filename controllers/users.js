@@ -28,9 +28,7 @@ exports.create = async (req, res, next) => {
 };
 
 exports.login = async (req, res) => {
-  console.log('login request', JSON.stringify(req), 'login Respnose', JSON.stringify(res));
-  return res.json({
-    message: 'Login successful',
-    user: req.user,
-  });
+  // log minimal user info to avoid circular JSON errors
+  console.log('login user', req.user && { id: req.user.id, name: req.user.name });
+  return res.json({ message: 'Login successful', user: req.user });
 };

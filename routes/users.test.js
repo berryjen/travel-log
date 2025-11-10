@@ -10,16 +10,60 @@ const users = require('../models/users');
 // and then discarded.
 
 // let authToken = '';
-const jenBasicAuth = `Basic ${Buffer.from('jen:123321').toString('base64')}`;
+// const jenBasicAuth = `Basic ${Buffer.from('jen:123321').toString('base64')}`;
+let agent;
+
+
+// If you use request(app) instead of agent:
+// No cookie is sent
+// req.session.passport is undefined
+// passport.session() doesn't set req.user
+// req.isAuthenticated() returns false
+// requireAuth returns 401
+
+
+// Login Request:
+// ┌─────────────────────────────────────────┐
+// │ agent.post('/login')                     │
+// │   ↓                                      │
+// │ passport.authenticate('local')          │
+// │   ↓                                      │
+// │ serializeUser(user) → stores user.id    │
+// │   ↓                                      │
+// │ express-session creates session         │
+// │   ↓                                      │
+// │ Response: Set-Cookie: connect.sid=...  │
+// │   ↓                                      │
+// │ agent stores cookie ✅                   │
+// └─────────────────────────────────────────┘
+
+// Protected Request:
+// ┌─────────────────────────────────────────┐
+// │ agent.get('/api/users')                  │
+// │   ↓                                      │
+// │ agent sends cookie automatically        │
+// │   ↓                                      │
+// │ express-session reads cookie            │
+// │   ↓                                      │
+// │ passport.session() deserializes        │
+// │   ↓                                      │
+// │ req.user = { id: 1, name: 'jen' }      │
+// │ req.isAuthenticated() = true            │
+// │   ↓                                      │
+// │ requireAuth checks → ✅ authenticated   │
+// │   ↓                                      │
+// │ usersController.list()                  │
+// └─────────────────────────────────────────┘
 
 beforeAll(async () => {
   await db.migrate.latest();
   await db.seed.run();
 
-  // const loginResponse = await request(app)
-  //   .post('/api/login')
-  //   .send({ name: 'jen', password: '123321' });
+  agent = request.agent(app);
 
+  // Login using the same agent so the returned session cookie is stored
+  const loginResponse = await agent.post('/api/users/login').send({ name: 'jen', password: '123321' });
+  expect(loginResponse.statusCode).toBe(200);
   // authToken = loginResponse.body.token;
 
 });
@@ -42,10 +86,9 @@ describe('GET /api/users', () => {
       createdUserId = null;
     }
   });
-  it('should respond with an array of users with valid password', async () => {
-    console.log('before response??', 'hello');
-    const res = await request(app).get('/api/users').set('Authorization', jenBasicAuth);
-    console.log('response', JSON.stringify(res));
+  it('should respond with an array of users with valid session', async () => {
+    // Use the 'agent' to automatically send the session cookie
+    const res = await agent.get('/api/users');
     // The values for the expected result are based on those defined
     // in seed data. See /seeds/create-test-users.js
     expect(res.statusCode).toEqual(200);
@@ -55,8 +98,8 @@ describe('GET /api/users', () => {
     expect(res.body[0]).toHaveProperty('name');
     expect(res.body[0].name).toEqual('jen');
   });
-  it('should not respond with an array of users with invalid password', async () => {
-    // const res = await request(app).get('/api/users?access_token=DEF457');
+  it('should not respond with an array of users without authentication', async () => {
+    // Use a fresh request without session (not the authenticated agent)
     const res = await request(app).get('/api/users');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
