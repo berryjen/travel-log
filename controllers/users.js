@@ -15,7 +15,7 @@ exports.get = async (req, res) => {
 exports.create = async (req, res, next) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.user_password, 10);
-    const user = await usersModel.create(req.body.name, hashedPassword);
+    const user = await usersModel.create(req.body.name, req.body.user_email, hashedPassword);
     return res.status(201).json(user);
   } catch (err) {
     if (err instanceof usersModel.UserExistsError) {

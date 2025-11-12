@@ -50,7 +50,6 @@ function errorHandler(err, req, res, next) {
     status: err.status || 500,
     message: err.message,
   };
-  console.log('request.data', data);
   res.status(err.status || 500);
   res.json(data);
   next();

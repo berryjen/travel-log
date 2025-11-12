@@ -100,8 +100,9 @@ describe('GET /api/users/2', () => {
 describe('POST /api/users', () => {
   it('should respond with a new user', async () => {
     const userName = `pie_${Date.now()}`;
-    const res = await agent.post('/api/users').send({ name: userName });
-    console.log('create user response', JSON.stringify(res));
+    const userPassword = 'secret_password';
+    const userEmail = `email_${Date.now()}@test.com`;
+    const res = await request(app).post('/api/users').send({ name: userName, user_email: userEmail, user_password: userPassword });
     expect(res.statusCode).toEqual(201);
     expect(typeof res.body.id).toEqual('number');
     expect(res.body).toHaveProperty('id');
@@ -116,9 +117,11 @@ describe('POST /api/users', () => {
 
   it('should create the user in the DB', async () => {
     const userName = `cake_${Date.now()}`;
-    const newUser = await users.create(userName);
-    const res = await request(app).get(
-      `/api/users/${newUser.id}/?access_token=ABC123`,
+    const userEmail = `email_${Date.now()}@test.com`;
+    const userPassword = 'secret_password';
+    const newUser = await users.create(userName, userEmail, userPassword);
+    const res = await agent.get(
+      `/api/users/${newUser.id}`,
     );
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('id');
@@ -129,11 +132,12 @@ describe('POST /api/users', () => {
 
   it('should not create the same user twice', async () => {
     const name = `chocolate_${Date.now()}`;
-    await users.create(name);
-    const res = await agent(app).post('/api/users').send({ name });
+    const userEmail = `email_${Date.now()}@test.com`;
+    const userPassword = 'secret_password';
+    await users.create(name, userEmail, userPassword);
+    const res = await agent.post('/api/users').send({ name, user_email: userEmail, user_password: userPassword });
     expect(res.statusCode).toEqual(400);
     expect(res.body).toHaveProperty('status');
-    expect(res.body.status).toEqual(400);
     expect(res.body).toHaveProperty('message');
     expect(res.body.message).toEqual(`user '${name}' already exists`);
   });

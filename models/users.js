@@ -13,23 +13,18 @@ exports.get_all = async () => {
   const users = await db('users').select(['id', 'name']);
   return users;
 };
-
-// get_by_token returns 1 user based on a token
-// if invalid token, undefined
-// if empty token, undefined
-exports.get_by_token = async (token) => {
-  const user = await db('users', 'tokens')
-    .join('tokens', 'tokens.user_id', '=', 'users.id')
-    .where({ 'tokens.bearer_token': token })
-    .first(['users.id', 'users.name']);
-  return user;
-};
 // get_by_id finds and returns a user based on user.id.
 exports.get_by_id = async (id) => {
   const user = await db('users').where({ id }).first(['id', 'name']);
   return user;
 };
 
+exports.get_by_email = async (userEmail) => {
+  console.log('usersModel.get_by_email', userEmail);
+  const user = await db('users').where({ user_email: userEmail }).first(['id', 'name', 'user_email', 'user_password']);
+  console.log('user found by email', user);
+  return user;
+};
 // get_by_name finds and returns a user based on user.name
 exports.get_by_name = async (name) => {
   // TODO: you might not want to return the user_password
@@ -38,10 +33,12 @@ exports.get_by_name = async (name) => {
 };
 
 // create saves a new user in the data store.
-exports.create = async (name) => {
+exports.create = async (name, userEmail, userPassword) => {
   try {
-    const inserted = await db('users').returning('id').insert({ name });
-    const user = { id: inserted[0].id, name };
+    const inserted = await db('users').returning('id').insert({ name, userEmail, userPassword });
+    const user = {
+      id: inserted[0].id, name, userEmail, userPassword,
+    };
     return user;
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT') {
