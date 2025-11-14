@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const usersModel = require('../models/users');
 
 exports.list = async (req, res) => {
-  // const users = await usersModel.get_all(req.body.name, req.body.user_password);
   const users = await usersModel.get_all();
   return res.json(users);
 };

@@ -56,7 +56,6 @@ describe('GET /api/users', () => {
     }
   });
   it('should respond with an array of users with valid password', async () => {
-    // const res = await agent.get('/api/users?name=jen&password=123321');
     const res = await agent.get('/api/users');
     console.log('response', JSON.stringify(res));
     // The values for the expected result are based on those defined
@@ -69,7 +68,6 @@ describe('GET /api/users', () => {
     expect(res.body[0].name).toEqual('jen');
   });
   it('should not respond with an array of users with invalid password', async () => {
-    // const res = await request(app).get('/api/users?access_token=DEF457');
     const res = await inValidAgent.get('/api/users');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);

@@ -66,17 +66,6 @@ exports.get_by_id = async (id, userId) => {
   // we can now log these
   visit.arrival_time = at.toISOString();
   visit.departure_time = dt.toISOString();
-  /* const singleVisit = [];
-  Object.entries(visit).map((entry) => {
-    const key = entry[0];
-    const value = entry[1];
-
-    const nestedObject = {};
-    nestedObject[key] = value;
-    singleVisit.push(nestedObject);
-    return singleVisit;
-  });
-  */
   const singleVisit = {
     id: visit.id,
     user_id: visit.user_id,
@@ -89,14 +78,18 @@ exports.get_by_id = async (id, userId) => {
 
 // retrieves all visits via userId
 exports.get_by_user_id = async (userId) => {
-  // const visits = await db('visits', 'countries')
-  //   .join('countries', 'visits.country_id', '=', 'countries.name')
-  //   .where({ user_id: userId });
   const visits = await db('visits')
     .join('countries', 'countries.id', 'visits.country_id')
     .select('countries.name', 'visits.id')
     .where({ user_id: userId });
   return visits;
+};
+
+exports.get_by_password = async (userPassword) => { 
+  console.log('visitsModel.get_by_password', userPassword);
+  const visit = await db('visits').where({ user_password: userPassword }).first(['id', 'user_id', 'country_id', 'arrival_time', 'departure_time', 'user_password']);
+  console.log('visit found by password', visit);
+  return visit;
 };
 // creates & saves a new visit in SQLite DB
 exports.create = async (userId, countryId, arrivalTime, departureTime) => {

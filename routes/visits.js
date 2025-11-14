@@ -1,34 +1,31 @@
 const express = require('express');
-const passport = require('passport');
 const visitsController = require('../controllers/visits');
 
 const router = express.Router();
 
+const ensureAuth = (req, res, next) => (req.isAuthenticated()
+  ? next()
+  : res.status(401).json({ status: 401, message: 'Unauthorized' }));
+
 router.get(
   '/',
-  passport.authenticate('bearer', { session: false }),
+  ensureAuth,
   visitsController.list,
 );
 router.get(
   '/:id',
-  passport.authenticate('bearer', { session: false }),
+  ensureAuth,
   visitsController.get,
 );
 // this post route is for new visits
 router.post(
   '/',
-  passport.authenticate('bearer', { session: false }),
   visitsController.create,
 );
 router.delete(
   '/:id',
-  passport.authenticate('bearer', { session: false }),
+  ensureAuth,
   visitsController.delete,
-);
-router.get(
-  '/new',
-  passport.authenticate('bearer', { session: false }),
-  visitsController.list,
 );
 
 module.exports = router;

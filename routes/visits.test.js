@@ -1,10 +1,35 @@
 const request = require('supertest');
 const app = require('../app');
+
 const db = require('../db/db');
+
+let agent;
 
 beforeAll(async () => {
   await db.migrate.latest();
   await db.seed.run();
+
+  agent = request.agent(app);
+
+  const loginResponse = await agent
+    .post('/api/visits/login')
+    .send({ name: 'jen', password: '123321' });
+
+  console.log('loginResponse.statusCode', loginResponse.statusCode);
+
+  expect(loginResponse.statusCode).toBe(200);
+});
+
+let inValidAgent;
+
+beforeAll(async () => {
+  inValidAgent = request.agent(app);
+
+  const loginResponse = await inValidAgent
+    .post('/api/visits')
+    .send({ name: 'bill', password: 'wrongpassword' });
+  console.log('nonValid loginResponse.statusCode', loginResponse.statusCode);
+  expect(loginResponse.statusCode).toBe(401);
 });
 
 afterAll(async () => {
@@ -12,15 +37,16 @@ afterAll(async () => {
 });
 
 describe('GET /api/visits', () => {
-  it('should respond with status 200 with valid token', async () => {
-    const res = await request(app).get('/api/visits?access_token=ABC123');
+  it('should respond with status 200 with valid password', async () => {
+    const res = await agent.get('/api/visits');
+    console.log('visits test', JSON.stringify(res));
     expect(res.statusCode).toEqual(200);
     expect(res.body[0]).toHaveProperty('user');
     expect(res.body[0]).toHaveProperty('country');
     expect(res.body.id).not.toBe(null);
   });
-  it('should respond with status 401 with invalid token', async () => {
-    const res = await request(app).get('/api/visits?access_token=ABC125');
+  it('should respond with status 401 with invalid password', async () => {
+    const res = await inValidAgent.get('/api/visits');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
@@ -28,9 +54,9 @@ describe('GET /api/visits', () => {
 });
 
 // add .only to run just this it block
-describe('GET /api/visits/', () => {
-  it('should respond with a single visit with valid token', async () => {
-    const res = await request(app).get('/api/visits/13/?access_token=DEF456');
+describe('GET /api/visits', () => {
+  it('should respond with a single visit with valid password', async () => {
+    const res = await agent.get('/api/visits/13/');
     console.log(res, '()()()()()()()()()()()()()()()()');
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('user_id');
@@ -38,8 +64,8 @@ describe('GET /api/visits/', () => {
     expect(res.body).toHaveProperty('arrival_time');
     expect(res.body.departure_time).toEqual('2022-10-30T23:00:00.000Z');
   });
-  it('should not respond with a single visit with invalid token', async () => {
-    const res = await request(app).get('/api/visits/25/?access_token=DEF458');
+  it('should not respond with a single visit with invalid password', async () => {
+    const res = await inValidAgent.get('/api/visits/25/');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
@@ -181,28 +207,3 @@ describe('GET /new-visits', () => {
     expect(res.body).toHaveProperty('message');
   });
 });
-
-// describe('GET /view-visit', () => {
-//   it('should respond with status 200 with valid token', async () => {
-//     const res = await request(app).get('/new-visits/?access_token=ABC123');
-//     // console.log(res, '%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-//     expect(res.statusCode).toEqual(200);
-//     expect(res.text).toContain('departureTime');
-//     expect(res.text).toContain('country');
-//     expect(res.text).not.toBe(null);
-//   });
-//   it('should respond with status 401 with invalid token', async () => {
-//     const res = await request(app).get('/api/visits?access_token=ABC450');
-//     expect(res.statusCode).toEqual(401);
-//     expect(res.body.status).toEqual(401);
-//     expect(res.body).toHaveProperty('message');
-//   });
-// });
-// describe('POST /newvisits', () => {
-//   const visit = {
-//     user_id: 1,
-//     country_id: 2,
-//     arrival_time: '2023-05-23T13:30:00.000Z',
-//     departure_time: '2023-05-24T13:30:00.000Z',
-//   };
-// });

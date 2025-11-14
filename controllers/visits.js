@@ -7,16 +7,12 @@ exports.list = async (req, res) => {
 };
 
 exports.get = async (req, res) => {
-  console.log('api handler', req.params.id, req.authInfo.user_id);
   const parsedId = parseInt(req.params.id, 10);
   const visit = await visitsModel.get_by_id(parsedId, req.authInfo.user_id);
-  console.log('controller get', visit);
   return res.json(visit);
 };
 
 exports.create = async (req, res) => {
-  // console.log(req.body);
-  // console.log(req.authInfo, 'user_id');
   try {
     // TODO: figure out a way to check that id isn't contained in body at all
     if (req.body.id !== undefined) {
@@ -25,12 +21,12 @@ exports.create = async (req, res) => {
     // TODO: check userID in req matches the userID in the token
     if (Number(req.body.user_id) !== req.authInfo.user_id) {
       console.log(
-        req.body.user_id,
-        req.query.user_id,
-        req.query.access_token,
-        req.authInfo.user_id,
+        req.body.name,
+        req.query.user_email,
+        req.body.user_password,
+        req.authInfo.user_password,
       );
-      return res.status(401).send('Unauthorized, user_id does not match token');
+      return res.status(401).send('Unauthorized, user_password does not match');
     }
     const country = await db('countries').where({ id: req.body.country_id });
     const visit = await visitsModel.create(
