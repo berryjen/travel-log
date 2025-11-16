@@ -2,17 +2,22 @@ const db = require('../db/db');
 const visitsModel = require('../models/visits');
 
 exports.list = async (req, res) => {
-  const visits = await visitsModel.get_all(req.authInfo.user_id);
+  console.log('visits controller', req.authInfo, req.user);
+  // visits controller undefined(req.authInfo) -> req.user.id { id: 1, name: 'jen' }
+  const visits = await visitsModel.get_all(req.user.id);
+  console.log('visits controller response', res.body);
   return res.json(visits);
 };
 
 exports.get = async (req, res) => {
   const parsedId = parseInt(req.params.id, 10);
-  const visit = await visitsModel.get_by_id(parsedId, req.authInfo.user_id);
+  const visit = await visitsModel.get_by_id(parsedId, req.user.id);
   return res.json(visit);
 };
 
 exports.create = async (req, res) => {
+  console.log('visits.create req', req.body);
+  console.log('visits.create res', res.body);
   try {
     // TODO: figure out a way to check that id isn't contained in body at all
     if (req.body.id !== undefined) {

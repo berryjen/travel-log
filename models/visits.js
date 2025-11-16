@@ -25,14 +25,15 @@ exports.get_all = async (userId) => {
     .select(['visits.id', 'user_id', 'country_id', 'name'])
     .where({ 'visits.user_id': userId });
   console.log('all visits', visits);
+  // all visits [ { id: 13, userId: 1, countryId: 1, name: 'Ascension Island' } ]
   const newVisits = [];
   visits.forEach((properties) => {
     const visits2 = {
       id: properties.id,
-      user: { id: properties.user_id },
-      country: { id: properties.country_id, name: properties.name },
+      user: { id: properties.userId },
+      country: { id: properties.countryId, name: properties.name },
     };
-    if (typeof properties.user_id !== 'number') {
+    if (typeof properties.userId !== 'number') {
       return;
     }
     newVisits.push(visits2);
@@ -43,15 +44,10 @@ exports.get_all = async (userId) => {
 
 // get_by_id returns all info regarding a single visit
 exports.get_by_id = async (id, userId) => {
-  console.log('typeof id is', typeof id);
-  console.log('typeof userId is', typeof userId);
   const visit = await db('visits')
     .join('countries', 'visits.country_id', '=', 'countries.id')
-    .where({ 'visits.id': id }, { 'visits.user_id': userId })
+    .where({ 'visits.id': id, 'visits.user_id': userId })
     .first();
-  // 'departure_time',
-  // );
-  console.log('model-visits', visit);
   if (visit === undefined) {
     throw new NotFoundError('visit not found');
   }
@@ -59,10 +55,12 @@ exports.get_by_id = async (id, userId) => {
 
   const atTs = Date.parse(visit.arrival_time);
   const dtTs = Date.parse(visit.departure_time);
-
+  console.log('atTs, dtTs', atTs, dtTs);
+  console.log('example date.parse', Date.parse('2022-10-30T23:00:00.000Z'));
   // Conver these numbers to dates
   const at = new Date(atTs);
   const dt = new Date(dtTs);
+  console.log('at, dt', at, dt);
   // we can now log these
   visit.arrival_time = at.toISOString();
   visit.departure_time = dt.toISOString();
@@ -85,12 +83,6 @@ exports.get_by_user_id = async (userId) => {
   return visits;
 };
 
-exports.get_by_password = async (userPassword) => { 
-  console.log('visitsModel.get_by_password', userPassword);
-  const visit = await db('visits').where({ user_password: userPassword }).first(['id', 'user_id', 'country_id', 'arrival_time', 'departure_time', 'user_password']);
-  console.log('visit found by password', visit);
-  return visit;
-};
 // creates & saves a new visit in SQLite DB
 exports.create = async (userId, countryId, arrivalTime, departureTime) => {
   try {

@@ -12,11 +12,8 @@ beforeAll(async () => {
   agent = request.agent(app);
 
   const loginResponse = await agent
-    .post('/api/visits/login')
+    .post('/api/users/login')
     .send({ name: 'jen', password: '123321' });
-
-  console.log('loginResponse.statusCode', loginResponse.statusCode);
-
   expect(loginResponse.statusCode).toBe(200);
 });
 
@@ -26,9 +23,8 @@ beforeAll(async () => {
   inValidAgent = request.agent(app);
 
   const loginResponse = await inValidAgent
-    .post('/api/visits')
+    .post('/api/users/login')
     .send({ name: 'bill', password: 'wrongpassword' });
-  console.log('nonValid loginResponse.statusCode', loginResponse.statusCode);
   expect(loginResponse.statusCode).toBe(401);
 });
 
@@ -37,15 +33,14 @@ afterAll(async () => {
 });
 
 describe('GET /api/visits', () => {
-  it('should respond with status 200 with valid password', async () => {
+  it.only('should respond with status 200 with valid password', async () => {
     const res = await agent.get('/api/visits');
-    console.log('visits test', JSON.stringify(res));
     expect(res.statusCode).toEqual(200);
     expect(res.body[0]).toHaveProperty('user');
     expect(res.body[0]).toHaveProperty('country');
     expect(res.body.id).not.toBe(null);
   });
-  it('should respond with status 401 with invalid password', async () => {
+  it.only('should respond with status 401 with invalid password', async () => {
     const res = await inValidAgent.get('/api/visits');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
@@ -53,26 +48,25 @@ describe('GET /api/visits', () => {
   });
 });
 
-// add .only to run just this it block
 describe('GET /api/visits', () => {
-  it('should respond with a single visit with valid password', async () => {
-    const res = await agent.get('/api/visits/13/');
-    console.log(res, '()()()()()()()()()()()()()()()()');
+  it.only('should respond with a single visit with valid password', async () => {
+    const res = await agent.get('/api/visits/13');
+    console.log('should respond with single visit with valid password', JSON.stringify(res));
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('user_id');
     expect(res.body.user_id).toEqual(1);
     expect(res.body).toHaveProperty('arrival_time');
     expect(res.body.departure_time).toEqual('2022-10-30T23:00:00.000Z');
   });
-  it('should not respond with a single visit with invalid password', async () => {
-    const res = await inValidAgent.get('/api/visits/25/');
+  it.only('should not respond with a single visit with invalid password', async () => {
+    const res = await inValidAgent.get('/api/visits/25');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
   });
 });
 
-describe('POST /api/visits/?access_token=DEF456', () => {
+describe('POST /api/visits', () => {
   const visit = {
     user_id: 1,
     country_id: 2,
@@ -81,7 +75,7 @@ describe('POST /api/visits/?access_token=DEF456', () => {
   };
 
   it('should respond with a new visit with valid token', async () => {
-    const res = await request(app)
+    const res = await agent
       .post('/api/visits?access_token=DEF456')
       .send(visit);
     visit.id = res.body.id;
@@ -94,9 +88,9 @@ describe('POST /api/visits/?access_token=DEF456', () => {
     expect(res.body.departure_time).toEqual(visit.departure_time);
   });
 
-  it('should not respond with a new visit with invalid token', async () => {
-    const res = await request(app)
-      .post('/api/visits/?access_token=DEF459')
+  it('should not respond with a new visit with invalid password', async () => {
+    const res = await inValidAgent
+      .post('/api/visits')
       .send(visit);
     // visit.id = res.body.id;
     // console.log(visit.id, 'xyz');
@@ -106,8 +100,8 @@ describe('POST /api/visits/?access_token=DEF456', () => {
   });
 
   it('should retrieve the new post in the DB with valid token', async () => {
-    const res = await request(app).get(
-      `/api/visits/${visit.id}/?access_token=DEF456`,
+    const res = await agent.get(
+      `/api/visits/${visit.id}`,
     );
     expect(res.statusCode).toEqual(200);
     expect(typeof res.body.user_id).toEqual('number');
@@ -117,9 +111,9 @@ describe('POST /api/visits/?access_token=DEF456', () => {
     expect(res.body.country).toHaveProperty('id');
   });
 
-  it('should not create the visit in the DB with invalid token', async () => {
-    const res = await request(app).get(
-      `/api/visits/${visit.id}/?access_token=DEF458`,
+  it('should not create the visit in the DB with invalid password', async () => {
+    const res = await inValidAgent.get(
+      `/api/visits/${visit.id}`,
     );
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
@@ -127,7 +121,7 @@ describe('POST /api/visits/?access_token=DEF456', () => {
   });
 });
 
-describe('POST /api/visits/?access_token=ABC123 (with timezone)', () => {
+describe('POST /api/visits/(with timezone)', () => {
   const visit = {
     user_id: 2,
     country_id: 3,
@@ -136,36 +130,36 @@ describe('POST /api/visits/?access_token=ABC123 (with timezone)', () => {
   };
   const expectedArrivalTime = '2022-10-27T08:27:25.000Z';
 
-  it('should respond with a new visit with valid token', async () => {
-    const res = await request(app)
-      .post('/api/visits/?access_token=ABC123')
+  it('should respond with a new visit with valid password', async () => {
+    const res = await agent
+      .post('/api/visits/')
       .send(visit);
     visit.id = res.body.id;
     expect(res.statusCode).toEqual(201);
     expect(res.body.arrival_time).toEqual(expectedArrivalTime);
   });
 
-  it('should not respond with a new visit with invalid token', async () => {
-    const res = await request(app)
-      .post('/api/visits/?access_token=DEF450')
+  it('should not respond with a new visit with invalid password', async () => {
+    const res = await inValidAgent
+      .post('/api/visits/')
       .send(visit);
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
   });
 
-  it('should create the visit in the DB with valid token', async () => {
-    const res = await request(app).get(
-      `/api/visits/${visit.id}/?access_token=ABC123`,
+  it('should create the visit in the DB with valid password', async () => {
+    const res = await agent.get(
+      `/api/visits/${visit.id}`,
     );
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('arrival_time');
     expect(res.body.arrival_time).toEqual(expectedArrivalTime);
   });
 
-  it('should not create the visit in the DB with invalid token', async () => {
-    const res = await request(app).get(
-      `/api/visits/${visit.id}/?access_token=DEF458`,
+  it('should not create the visit in the DB with invalid password', async () => {
+    const res = await inValidAgent.get(
+      `/api/visits/${visit.id}`,
     );
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
@@ -174,16 +168,15 @@ describe('POST /api/visits/?access_token=ABC123 (with timezone)', () => {
 });
 
 describe('GET /new-visits', () => {
-  it('should respond with status 200 with valid token', async () => {
-    const res = await request(app).get('/new-visits/?access_token=DEF456');
-    // console.log(res, 'line150');
+  it('should respond with status 200 with valid password', async () => {
+    const res = await agent.get('/new-visits/');
     expect(res.statusCode).toEqual(200);
     expect(res.text).toContain('name');
     expect(res.text).toContain('country');
     expect(res.text).not.toBe(null);
   });
-  it('should respond with status 401 with invalid token', async () => {
-    const res = await request(app).get('/api/visits?access_token=ABC455');
+  it('should respond with status 401 with invalid password', async () => {
+    const res = await inValidAgent.get('/api/visits');
 
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
@@ -192,16 +185,15 @@ describe('GET /new-visits', () => {
 });
 
 describe('GET /new-visits', () => {
-  it('should respond with status 200 with valid token', async () => {
-    const res = await request(app).get('/new-visits/?access_token=DEF456');
-    // console.log(res, 'line150');
+  it('should respond with status 200 with valid password', async () => {
+    const res = await agent.get('/new-visits/');
     expect(res.statusCode).toEqual(200);
     expect(res.text).toContain('name');
     expect(res.text).toContain('country');
     expect(res.text).not.toBe(null);
   });
-  it('should respond with status 401 with invalid token', async () => {
-    const res = await request(app).get('/api/visits?access_token=ABC455');
+  it('should respond with status 401 with invalid password', async () => {
+    const res = await inValidAgent.get('/new-visits/');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
