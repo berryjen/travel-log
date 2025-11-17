@@ -38,7 +38,7 @@ exports.get_all = async (userId) => {
     }
     newVisits.push(visits2);
   });
-  console.log(newVisits);
+  console.log('new visits from models', newVisits);
   return newVisits;
 };
 
@@ -51,12 +51,11 @@ exports.get_by_id = async (id, userId) => {
   if (visit === undefined) {
     throw new NotFoundError('visit not found');
   }
-  // Parse dates in the DB from strings to number (seconds since UNIX epoch)
+  console.log('visit from get_by_id', visit);
 
-  const atTs = Date.parse(visit.arrival_time);
-  const dtTs = Date.parse(visit.departure_time);
+  const atTs = Date.parse(visit.arrivalTime);
+  const dtTs = Date.parse(visit.departureTime);
   console.log('atTs, dtTs', atTs, dtTs);
-  console.log('example date.parse', Date.parse('2022-10-30T23:00:00.000Z'));
   // Conver these numbers to dates
   const at = new Date(atTs);
   const dt = new Date(dtTs);
@@ -66,11 +65,12 @@ exports.get_by_id = async (id, userId) => {
   visit.departure_time = dt.toISOString();
   const singleVisit = {
     id: visit.id,
-    user_id: visit.user_id,
-    country: { id: visit.country_id, name: visit.name },
-    departure_time: visit.departure_time,
-    arrival_time: visit.arrival_time,
+    user_id: visit.userId,
+    country: { id: visit.countryId, name: visit.name },
+    departure_time: visit.departureTime,
+    arrival_time: visit.arrivalTime,
   };
+  console.log('singleVisit from get_by_id', singleVisit);
   return singleVisit;
 };
 

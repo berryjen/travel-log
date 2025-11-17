@@ -23,22 +23,17 @@ passport.use(new LocalStrategy(
     passwordField: 'password',
   },
   async (name, password, done) => {
-    console.log('name', name, 'password', password);
     try {
       const user = await usersModel.get_by_name(name);
-      console.log('username found', user);
-
       if (!user) {
         return done(null, false, { message: 'Incorrect username.' });
       }
 
       const match = await bcrypt.compare(password, user.userPassword);
 
-      console.log('password match', match);
       if (!match) {
         return done(null, false, { message: 'Incorrect password.' });
       }
-
       return done(null, user);
     } catch (err) {
       return done(err);

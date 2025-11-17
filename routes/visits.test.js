@@ -33,14 +33,14 @@ afterAll(async () => {
 });
 
 describe('GET /api/visits', () => {
-  it.only('should respond with status 200 with valid password', async () => {
+  it('should respond with status 200 with valid password', async () => {
     const res = await agent.get('/api/visits');
     expect(res.statusCode).toEqual(200);
     expect(res.body[0]).toHaveProperty('user');
     expect(res.body[0]).toHaveProperty('country');
     expect(res.body.id).not.toBe(null);
   });
-  it.only('should respond with status 401 with invalid password', async () => {
+  it('should respond with status 401 with invalid password', async () => {
     const res = await inValidAgent.get('/api/visits');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
@@ -49,16 +49,15 @@ describe('GET /api/visits', () => {
 });
 
 describe('GET /api/visits', () => {
-  it.only('should respond with a single visit with valid password', async () => {
+  it('should respond with a single visit with valid password', async () => {
     const res = await agent.get('/api/visits/13');
-    console.log('should respond with single visit with valid password', JSON.stringify(res));
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('user_id');
     expect(res.body.user_id).toEqual(1);
     expect(res.body).toHaveProperty('arrival_time');
     expect(res.body.departure_time).toEqual('2022-10-30T23:00:00.000Z');
   });
-  it.only('should not respond with a single visit with invalid password', async () => {
+  it('should not respond with a single visit with invalid password', async () => {
     const res = await inValidAgent.get('/api/visits/25');
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
@@ -68,27 +67,28 @@ describe('GET /api/visits', () => {
 
 describe('POST /api/visits', () => {
   const visit = {
-    user_id: 1,
-    country_id: 2,
-    arrival_time: '2023-05-23T13:30:00.000Z',
-    departure_time: '2023-05-24T13:30:00.000Z',
+    userId: 1,
+    countryId: 2,
+    arrivalTime: '2023-05-23T13:30:00.000Z',
+    departureTime: '2023-05-24T13:30:00.000Z',
   };
 
-  it('should respond with a new visit with valid token', async () => {
+  it.only('should respond with a new visit with valid token', async () => {
     const res = await agent
-      .post('/api/visits?access_token=DEF456')
+      .post('/api/visits')
       .send(visit);
+    console.log('post/api/visits test', res.body);
+
     visit.id = res.body.id;
-    // console.log(res, 'line60');
     expect(res.statusCode).toEqual(201);
-    expect(typeof res.body.arrival_time).toEqual('string');
-    expect(res.body).toHaveProperty('country_id');
-    expect(res.body).toHaveProperty('departure_time');
-    expect(res.body.user_id).toEqual(visit.user_id);
-    expect(res.body.departure_time).toEqual(visit.departure_time);
+    expect(typeof res.body.arrivalTime).toEqual('string');
+    expect(res.body).toHaveProperty('countryId');
+    expect(res.body).toHaveProperty('departureTime');
+    expect(res.body.userId).toEqual(visit.userId);
+    expect(res.body.departureTime).toEqual(visit.departureTime);
   });
 
-  it('should not respond with a new visit with invalid password', async () => {
+  it.only('should not respond with a new visit with invalid password', async () => {
     const res = await inValidAgent
       .post('/api/visits')
       .send(visit);
@@ -99,19 +99,19 @@ describe('POST /api/visits', () => {
     expect(res.body).toHaveProperty('message');
   });
 
-  it('should retrieve the new post in the DB with valid token', async () => {
+  it.only('should retrieve the new post in the DB with valid token', async () => {
     const res = await agent.get(
       `/api/visits/${visit.id}`,
     );
     expect(res.statusCode).toEqual(200);
     expect(typeof res.body.user_id).toEqual('number');
     expect(res.body).toHaveProperty('arrival_time');
-    expect(res.body.arrival_time).toEqual(visit.arrival_time);
+    expect(res.body.arrival_time).toEqual(visit.arrivalTime);
     console.log(res.body);
     expect(res.body.country).toHaveProperty('id');
   });
 
-  it('should not create the visit in the DB with invalid password', async () => {
+  it.only('should not create the visit in the DB with invalid password', async () => {
     const res = await inValidAgent.get(
       `/api/visits/${visit.id}`,
     );
