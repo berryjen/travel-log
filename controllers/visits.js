@@ -1,4 +1,3 @@
-const { type } = require('os');
 const db = require('../db/db');
 const visitsModel = require('../models/visits');
 
@@ -17,7 +16,11 @@ exports.get = async (req, res) => {
 
 exports.create = async (req, res) => {
   console.log('visits.create req', req.body);
+  console.log('visits controller req', req.user, req.session.user);
   console.log('visits.create res', res.body);
+  if (!req.user) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
   try {
     console.log(
       'visits controller create req info:',
@@ -26,7 +29,7 @@ exports.create = async (req, res) => {
       // req.body.userPassword,
       // req.authInfo.userPassword,
       typeof req.body.userId,
-      typeof req.authInfo.userId,
+      // typeof req.user.id,
       req.body,
     );
     // TODO: figure out a way to check that id isn't contained in body at all
@@ -35,15 +38,15 @@ exports.create = async (req, res) => {
       return res.status(400).send('Bad Reqest, should not include id');
     }
     // TODO: check userID in req matches the userID in the token
-    if (Number(req.body.user_id) !== req.authInfo.user_id) {
+    if (!req.user.id || req.body.userId !== req.user.id) {
       return res.status(401).send('Unauthorized, user_password does not match');
     }
-    const country = await db('countries').where({ id: req.body.country_id });
+    const country = await db('countries').where({ id: req.body.countryId });
     const visit = await visitsModel.create(
-      req.authInfo.user_id,
+      req.user.id,
       country[0].id,
-      req.body.arrival_time,
-      req.body.departure_time,
+      req.body.arrivalTime,
+      req.body.departureTime,
     );
     return res.status(201).json(visit);
   } catch (err) {

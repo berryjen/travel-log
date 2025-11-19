@@ -99,10 +99,10 @@ exports.create = async (userId, countryId, arrivalTime, departureTime) => {
     });
     const visit = {
       id: inserted[0].id,
-      user_id: userId,
-      country_id: countryId,
-      arrival_time: at.toISOString(),
-      departure_time: dt.toISOString(),
+      userId,
+      countryId,
+      arrivalTime: at.toISOString(),
+      departureTime: dt.toISOString(),
     };
     return visit;
   } catch (err) {

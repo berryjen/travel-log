@@ -92,11 +92,9 @@ describe('POST /api/visits', () => {
     const res = await inValidAgent
       .post('/api/visits')
       .send(visit);
-    // visit.id = res.body.id;
-    // console.log(visit.id, 'xyz');
     expect(res.statusCode).toEqual(401);
-    expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toEqual('Unauthorized');
   });
 
   it.only('should retrieve the new post in the DB with valid token', async () => {
@@ -118,6 +116,7 @@ describe('POST /api/visits', () => {
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
+    // expect(res.body.message).toEqual('Unauthorized');
   });
 });
 
