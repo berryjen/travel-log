@@ -44,6 +44,7 @@ exports.get_all = async (userId) => {
 
 // get_by_id returns all info regarding a single visit
 exports.get_by_id = async (id, userId) => {
+  console.log('get_by_id visit id, userId', id, userId);
   const visit = await db('visits')
     .join('countries', 'visits.country_id', '=', 'countries.id')
     .where({ 'visits.id': id, 'visits.user_id': userId })

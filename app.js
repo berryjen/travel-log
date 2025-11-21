@@ -4,7 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const passport = require('passport');
-// const BearerStrategy = require('passport-http-bearer').Strategy;
 // api routes
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');

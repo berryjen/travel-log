@@ -15,6 +15,7 @@ exports.get = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
+  console.log('visits controller create timestamp', new Date().toISOString());
   console.log('visits.create req', req.body);
   console.log('visits controller req', req.user, req.session.user);
   console.log('visits.create res', res.body);
@@ -26,10 +27,7 @@ exports.create = async (req, res) => {
       'visits controller create req info:',
       req.body.name,
       req.query.userEmail,
-      // req.body.userPassword,
-      // req.authInfo.userPassword,
       typeof req.body.userId,
-      // typeof req.user.id,
       req.body,
     );
     // TODO: figure out a way to check that id isn't contained in body at all
@@ -38,9 +36,10 @@ exports.create = async (req, res) => {
       return res.status(400).send('Bad Reqest, should not include id');
     }
     // TODO: check userID in req matches the userID in the token
-    if (!req.user.id || req.body.userId !== req.user.id) {
-      return res.status(401).send('Unauthorized, user_password does not match');
-    }
+    // if (!req.user.id || req.body.userId !== req.user.id) {
+    //   console.log('req.user.id from create visit controller', req.user.id);
+    //   return res.status(401).send('Unauthorized, user_password does not match');
+    // }
     const country = await db('countries').where({ id: req.body.countryId });
     const visit = await visitsModel.create(
       req.user.id,
@@ -48,6 +47,7 @@ exports.create = async (req, res) => {
       req.body.arrivalTime,
       req.body.departureTime,
     );
+    console.log('visits Model create', visit);
     return res.status(201).json(visit);
   } catch (err) {
     if (err instanceof visitsModel.ConstraintIdNullError) {
