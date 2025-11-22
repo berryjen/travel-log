@@ -165,36 +165,3 @@ describe('POST /api/visits/(with timezone)', () => {
     expect(res.body).toHaveProperty('message');
   });
 });
-
-describe('GET /new-visits', () => {
-  it.only('should respond with status 200 with valid password', async () => {
-    const res = await agent.get('/new-visits/');
-    expect(res.statusCode).toEqual(200);
-    expect(res.text).toContain('name');
-    expect(res.text).toContain('country');
-    expect(res.text).not.toBe(null);
-  });
-  it.only('should respond with status 401 with invalid password', async () => {
-    const res = await inValidAgent.get('/api/visits');
-
-    expect(res.statusCode).toEqual(401);
-    expect(res.body.status).toEqual(401);
-    expect(res.body).toHaveProperty('message');
-  });
-});
-
-describe('GET /new-visits', () => {
-  it.only('should respond with status 200 with valid password', async () => {
-    const res = await agent.get('/new-visits/');
-    expect(res.statusCode).toEqual(200);
-    expect(res.text).toContain('name');
-    expect(res.text).toContain('country');
-    expect(res.text).not.toBe(null);
-  });
-  it.only('should respond with status 401 with invalid password', async () => {
-    const res = await inValidAgent.get('/new-visits/');
-    expect(res.statusCode).toEqual(401);
-    expect(res.body.status).toEqual(401);
-    expect(res.body).toHaveProperty('message');
-  });
-});
