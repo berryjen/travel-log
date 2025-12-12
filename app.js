@@ -21,9 +21,10 @@ require('./passport-config');
 const app = express();
 
 app.use(session({
+  // priate encrypted key to ensure that the coookie actually comes from the server
   secret: 'your_strong_secret_key',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: { maxAge: 60 * 60 * 1000 }, // 1 hour
 }));
 
