@@ -49,8 +49,9 @@ const login = async (req, res) => {
 
     const existingUser = await db('users')
       .where({ user_email: userEmail })
-      .first('user_password', 'user_email', 'name');
+      .first('id', 'user_password', 'user_email', 'name');
     console.log('user from DB:', existingUser);
+    console.log('Object.keys(existingUser):', Object.keys(existingUser || {}));
 
     if (!existingUser) {
       return res.status(401).json({
@@ -74,9 +75,31 @@ const login = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      message: 'User logged in successfully',
-      user: existingUser,
+    // ✅ req.login() triggers the session creation
+    // This will call passport.serializeUser() which stores user.id in the session
+    // express-session will then send a Set-Cookie header with the session ID
+    return req.login(existingUser, (err) => {
+      if (err) {
+        console.error('Session creation error:', err);
+        return res.status(500).json({
+          error: 'Failed to create session',
+        });
+      }
+
+      console.log('✅ Session created successfully!');
+      console.log('req.session after login:', req.session);
+      console.log('req.sessionID:', req.sessionID);
+      console.log('Set-Cookie header will be sent with sessionID:', req.sessionID);
+
+      // Session is now established, Set-Cookie header will be sent automatically
+      return res.status(200).json({
+        message: 'User logged in successfully',
+        user: {
+          id: existingUser.id,
+          name: existingUser.name,
+          userEmail: existingUser.userEmail,
+        },
+      });
     });
   } catch (error) {
     console.error('Login error:', error);
