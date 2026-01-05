@@ -46,9 +46,8 @@ app.use(session({
   cookie: {
     maxAge: 60 * 60 * 1000, // 1 hour
     httpOnly: true, // Prevents client-side JS from accessing the cookie
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production', // true in production with HTTPS
-    domain: 'localhost', // Explicitly set domain to localhost
+    sameSite: 'lax', // Allow cookies in same-site cross-origin requests (localhost:5173 to localhost:3000)
+    secure: false, // Set to true in production with HTTPS
   },
   store: new ConnectSessionKnexStore({
     knex: db,
