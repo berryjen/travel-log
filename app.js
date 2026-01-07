@@ -58,8 +58,8 @@ app.use(session({
 }));
 
 // Passport middleware must come after session
-app.use(passport.initialize()); // <- initialises the authentication module https://stackoverflow.com/questions/46644366/what-is-passport-initialize-nodejs-express
-app.use(passport.session()); // <- https://www.passportjs.org/concepts/authentication/sessions/
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const apiPrefix = '/api';
