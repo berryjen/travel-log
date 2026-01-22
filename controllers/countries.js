@@ -19,6 +19,12 @@ exports.search = async (req, res) => {
   return res.json(country);
 };
 
+exports.autocomplete = async (req, res) => {
+  console.log('autocomplete', req.query.name);
+  const country = await countriesModel.get_all_case_insensitive(req.query.name);
+  return res.json(country);
+};
+
 exports.create = async (req, res) => {
   try {
     const country = await countriesModel.create(req.body.name);

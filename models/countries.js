@@ -29,6 +29,13 @@ exports.get_by_name = async (name) => {
   return country;
 };
 
+// get_all_case_insensitive finds and returns all countries based on country.name
+// it's case-insensitive
+exports.get_all_case_insensitive = async (query) => {
+  const countries = await db('countries').where('name', 'like', `%${query}%`);
+  return countries;
+};
+
 // create saves a new country in the data store.
 exports.create = async (name) => {
   try {
