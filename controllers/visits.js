@@ -40,12 +40,12 @@ exports.create = async (req, res) => {
     //   console.log('req.user.id from create visit controller', req.user.id);
     //   return res.status(401).send('Unauthorized, user_password does not match');
     // }
-    const country = await db('countries').where({ id: req.body.countryId });
+    const country = await db('countries').where({ id: req.body.country_id });
     const visit = await visitsModel.create(
       req.user.id,
       country[0].id,
-      req.body.arrivalTime,
-      req.body.departureTime,
+      req.body.arrival_time,
+      req.body.departure_time,
     );
     console.log('visits Model create', visit);
     return res.status(201).json(visit);
