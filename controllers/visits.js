@@ -20,6 +20,7 @@ exports.create = async (req, res) => {
   console.log('visits controller req', req.user, req.session.user);
   console.log('visits.create res', res.body);
   if (!req.user) {
+    console.log('req user', req.user);
     return res.status(401).json({ message: 'Unauthorized' });
   }
   try {
