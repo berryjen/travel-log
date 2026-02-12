@@ -108,7 +108,22 @@ const login = async (req, res) => {
     });
   }
 };
+
+const me = async (req, res) => {
+  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  return res.status(200).json({
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+    },
+  });
+};
+
 module.exports = {
   register,
   login,
+  me,
 };
