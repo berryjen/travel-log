@@ -75,9 +75,6 @@ const login = async (req, res) => {
       });
     }
 
-    // ✅ req.login() triggers the session creation
-    // This will call passport.serializeUser() which stores user.id in the session
-    // express-session will then send a Set-Cookie header with the session ID
     return req.login(existingUser, (err) => {
       if (err) {
         console.error('Session creation error:', err);
@@ -91,7 +88,6 @@ const login = async (req, res) => {
       console.log('req.sessionID:', req.sessionID);
       console.log('Set-Cookie header will be sent with sessionID:', req.sessionID);
 
-      // Session is now established, Set-Cookie header will be sent automatically
       return res.status(200).json({
         message: 'User logged in successfully',
         user: {
@@ -108,7 +104,22 @@ const login = async (req, res) => {
     });
   }
 };
+
+const me = async (req, res) => {
+  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  return res.status(200).json({
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+    },
+  });
+};
+
 module.exports = {
   register,
   login,
+  me,
 };
