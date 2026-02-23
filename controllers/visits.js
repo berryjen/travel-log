@@ -2,7 +2,6 @@ const db = require('../db/db');
 const visitsModel = require('../models/visits');
 
 exports.list = async (req, res) => {
-  // visits controller undefined(req.authInfo) -> req.user.id { id: 1, name: 'jen' }
   const visits = await visitsModel.get_all(req.user.id);
   return res.json(visits);
 };
@@ -36,11 +35,7 @@ exports.create = async (req, res) => {
       console.log('req.body.id from create visit controller', req.body.id);
       return res.status(400).send('Bad Reqest, should not include id');
     }
-    // TODO: check userID in req matches the userID in the token
-    // if (!req.user.id || req.body.userId !== req.user.id) {
-    //   console.log('req.user.id from create visit controller', req.user.id);
-    //   return res.status(401).send('Unauthorized, user_password does not match');
-    // }
+
     const country = await db('countries').where({ id: req.body.country_id });
     const visit = await visitsModel.create(
       req.user.id,
@@ -49,7 +44,7 @@ exports.create = async (req, res) => {
       req.body.departure_time,
     );
     console.log('visits Model create', visit);
-    return res.status(201).json(visit);
+    return res.status(201).json({ message: 'visit created successfully' });
   } catch (err) {
     if (err instanceof visitsModel.ConstraintIdNullError) {
       err.status = 400;
