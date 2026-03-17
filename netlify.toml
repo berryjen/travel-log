@@ -4,7 +4,7 @@
   included_files = ["dev.sqlite3"]
 
 [[redirects]]
-  from = "/api/*"
+  from = "/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
   force = true
