@@ -1,0 +1,32 @@
+[Function: knexStringcase]
+{
+  wrapIdentifier: [Function: wrapIdentifier],
+  postProcessResponse: [Function: postProcessResponse]
+}
+{
+  client: 'sqlite3',
+  connection: { filename: './dev.sqlite3' },
+  useNullAsDefault: true,
+  wrapIdentifier: [Function: wrapIdentifier],
+  postProcessResponse: [Function: postProcessResponse]
+}
+Logging in user: {
+  reqBody: {
+    name: 'yang ',
+    userEmail: 'yang@hotmail.com',
+    userPassword: '1234'
+  }
+}
+user from DB: undefined
+Object.keys(existingUser): []
+[0mPOST /api/authentication/login [33m401 [0m31.293 ms - 42[0m
+Logging in user: {
+  reqBody: {
+    name: 'yang ',
+    userEmail: 'yang@hotmail.com',
+    userPassword: '1234'
+  }
+}
+user from DB: undefined
+Object.keys(existingUser): []
+[0mPOST /api/authentication/login [33m401 [0m9.271 ms - 42[0m
