@@ -28,11 +28,19 @@ const register = async (req, res) => {
         userEmail,
         userPassword: hashedPassword,
       })
-      .returning(['userPassword', 'userEmail']);
+      .returning(['userPassword', 'userEmail', 'id', 'name']);
 
-    return res.status(201).json({
-      message: 'User created successfully',
-      user: newUser,
+    return req.login(newUser, (err) => {
+      if (err) {
+        console.error('Session creation error:', err);
+        return res.status(500).json({
+          error: 'Failed to create session',
+        });
+      }
+      return res.status(201).json({
+        message: 'User created successfully',
+        user: newUser,
+      });
     });
   } catch (error) {
     console.error('Registration error:', error);
