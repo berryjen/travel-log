@@ -11,6 +11,13 @@ const ensureAuth = (req, res, next) => (req.isAuthenticated()
 // where the user has already been authenticated
 // by local strategy and already has a session cookie
 // this step is to grant authoriation to the user to access the resource
+
+// Account management routes (must be before /:id to avoid route conflicts)
+router.get('/me/account-status', ensureAuth, usersController.getAccountStatus);
+router.post('/me/deactivate', ensureAuth, usersController.deactivate);
+router.post('/me/reactivate', ensureAuth, usersController.reactivate);
+router.delete('/me', ensureAuth, usersController.deleteAccount);
+
 router.get('/', ensureAuth, usersController.list);
 router.get('/:id', ensureAuth, usersController.get);
 

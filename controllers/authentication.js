@@ -57,7 +57,7 @@ const login = async (req, res) => {
 
     const existingUser = await db('users')
       .where({ user_email: userEmail })
-      .first('id', 'user_password', 'user_email', 'name');
+      .first('id', 'user_password', 'user_email', 'name', 'account_status', 'deactivated_at');
     console.log('user from DB:', existingUser);
     console.log('Object.keys(existingUser):', Object.keys(existingUser || {}));
 
@@ -80,6 +80,14 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         error: 'Invalid password',
+      });
+    }
+
+    // Block deactivated accounts from logging in
+    if (existingUser.accountStatus === 'deactivated') {
+      return res.status(403).json({
+        error: 'Account is deactivated. Please reactivate before logging in.',
+        deactivatedAt: existingUser.deactivatedAt,
       });
     }
 

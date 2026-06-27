@@ -34,6 +34,11 @@ passport.use(new LocalStrategy(
       if (!match) {
         return done(null, false, { message: 'Incorrect password.' });
       }
+
+      if (user.accountStatus === 'deactivated') {
+        return done(null, false, { message: 'Account is deactivated. Please reactivate before logging in.' });
+      }
+
       return done(null, user);
     } catch (err) {
       return done(err);
@@ -41,5 +46,4 @@ passport.use(new LocalStrategy(
   },
 ));
 
-// This part is crucial for making the configuration available
 module.exports = passport;

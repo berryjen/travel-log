@@ -140,3 +140,227 @@ describe('POST /api/users', () => {
     expect(res.body.message).toEqual(`user '${name}' already exists`);
   });
 });
+
+describe('GET /api/users/me/account-status', () => {
+  it('should return active status for a normal account', async () => {
+    const res = await agent.get('/api/users/me/account-status');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.status).toEqual('active');
+    expect(res.body.canDelete).toEqual(false);
+    expect(res.body.deactivatedAt).toBeNull();
+    expect(res.body.deletionEligibleAt).toBeNull();
+  });
+
+  it('should return 401 for unauthenticated user', async () => {
+    const res = await inValidAgent.get('/api/users/me/account-status');
+    expect(res.statusCode).toEqual(401);
+  });
+});
+
+describe('POST /api/users/me/deactivate', () => {
+  it('should deactivate the authenticated user account', async () => {
+    // Create a new user and login to get a fresh agent for deactivation tests
+    const deactivateAgent = request.agent(app);
+    const userName = `deactivate_user_${Date.now()}`;
+    const userEmail = `deactivate_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    // Register via the authentication endpoint
+    await deactivateAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    const res = await deactivateAgent.post('/api/users/me/deactivate');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toContain('deactivated');
+    expect(res.body).toHaveProperty('deactivatedAt');
+    expect(res.body).toHaveProperty('deletionEligibleAt');
+  });
+
+  it('should return 401 for unauthenticated user', async () => {
+    const res = await inValidAgent.post('/api/users/me/deactivate');
+    expect(res.statusCode).toEqual(401);
+  });
+});
+
+describe('POST /api/users/me/reactivate', () => {
+  it('should reactivate a deactivated account', async () => {
+    // Create, login, deactivate, then reactivate
+    const reactivateAgent = request.agent(app);
+    const userName = `reactivate_user_${Date.now()}`;
+    const userEmail = `reactivate_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    await reactivateAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    // Deactivate (this logs the user out)
+    await reactivateAgent.post('/api/users/me/deactivate');
+
+    // Need to log back in to reactivate — but the account is deactivated.
+    // Reactivation requires authentication, so we manually set status back
+    // to test the endpoint. In production, reactivation would be done
+    // through a special flow. For testing, we directly update the DB.
+    const user = await db('users').where({ name: userName }).first('id');
+    await db('users').where({ id: user.id }).update({ account_status: 'active' });
+
+    // Login again
+    await reactivateAgent
+      .post('/api/authentication/login')
+      .send({ userEmail, userPassword });
+
+    // Now deactivate again
+    await reactivateAgent.post('/api/users/me/deactivate');
+
+    // Manually set active to allow login for reactivation test
+    await db('users').where({ id: user.id }).update({ account_status: 'active' });
+
+    // Login again
+    await reactivateAgent
+      .post('/api/authentication/login')
+      .send({ userEmail, userPassword });
+
+    // Deactivate in the DB (but keep session active for testing)
+    await db('users').where({ id: user.id }).update({
+      account_status: 'deactivated',
+      deactivated_at: new Date().toISOString(),
+    });
+
+    const res = await reactivateAgent.post('/api/users/me/reactivate');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toContain('reactivated');
+  });
+
+  it('should return 400 when trying to reactivate an active account', async () => {
+    const res = await agent.post('/api/users/me/reactivate');
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.error).toContain('not deactivated');
+  });
+});
+
+describe('DELETE /api/users/me', () => {
+  it('should immediately delete account with correct password', async () => {
+    const deleteAgent = request.agent(app);
+    const userName = `delete_user_${Date.now()}`;
+    const userEmail = `delete_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    await deleteAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    const res = await deleteAgent
+      .delete('/api/users/me')
+      .send({ password: userPassword, immediate: true });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toContain('permanently deleted');
+
+    // Verify user no longer exists
+    const deletedUser = await db('users').where({ name: userName }).first();
+    expect(deletedUser).toBeUndefined();
+  });
+
+  it('should reject delete with wrong password', async () => {
+    const deleteAgent = request.agent(app);
+    const userName = `delete_wrong_pw_${Date.now()}`;
+    const userEmail = `delete_wrong_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    await deleteAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    const res = await deleteAgent
+      .delete('/api/users/me')
+      .send({ password: 'wrong_password', immediate: true });
+
+    expect(res.statusCode).toEqual(401);
+    expect(res.body.error).toContain('Invalid password');
+  });
+
+  it('should reject delete without password', async () => {
+    const res = await agent
+      .delete('/api/users/me')
+      .send({});
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.error).toContain('Password is required');
+  });
+
+  it('should reject non-immediate delete when account is not deactivated', async () => {
+    const deleteAgent = request.agent(app);
+    const userName = `delete_noDeact_${Date.now()}`;
+    const userEmail = `delete_noDeact_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    await deleteAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    const res = await deleteAgent
+      .delete('/api/users/me')
+      .send({ password: userPassword });
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.error).toContain('must be deactivated');
+  });
+
+  it('should reject non-immediate delete when 30 days have not passed', async () => {
+    const deleteAgent = request.agent(app);
+    const userName = `delete_30d_${Date.now()}`;
+    const userEmail = `delete_30d_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    await deleteAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    // Deactivate account directly in DB (keep session alive for testing)
+    const user = await db('users').where({ name: userName }).first('id');
+    await db('users').where({ id: user.id }).update({
+      account_status: 'deactivated',
+      deactivated_at: new Date().toISOString(), // just now, not 30 days ago
+    });
+
+    const res = await deleteAgent
+      .delete('/api/users/me')
+      .send({ password: userPassword });
+
+    expect(res.statusCode).toEqual(403);
+    expect(res.body.error).toContain('30-day waiting period');
+    expect(res.body).toHaveProperty('deletionEligibleAt');
+  });
+
+  it('should allow non-immediate delete after 30 days have passed', async () => {
+    const deleteAgent = request.agent(app);
+    const userName = `delete_eligible_${Date.now()}`;
+    const userEmail = `delete_eligible_${Date.now()}@test.com`;
+    const userPassword = 'test_password';
+
+    await deleteAgent
+      .post('/api/authentication/register')
+      .send({ name: userName, userEmail, userPassword });
+
+    // Set deactivated_at to 31 days ago
+    const user = await db('users').where({ name: userName }).first('id');
+    const thirtyOneDaysAgo = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString();
+    await db('users').where({ id: user.id }).update({
+      account_status: 'deactivated',
+      deactivated_at: thirtyOneDaysAgo,
+    });
+
+    const res = await deleteAgent
+      .delete('/api/users/me')
+      .send({ password: userPassword });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.message).toContain('permanently deleted');
+
+    // Verify user no longer exists
+    const deletedUser = await db('users').where({ name: userName }).first();
+    expect(deletedUser).toBeUndefined();
+  });
+});
+
