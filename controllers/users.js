@@ -121,7 +121,6 @@ exports.deleteAccount = async (req, res) => {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    // If not immediate, check 30-day eligibility
     if (!immediate) {
       const status = await usersModel.get_account_status(req.user.id);
       if (!status || status.accountStatus !== 'deactivated') {
