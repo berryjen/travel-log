@@ -68,3 +68,18 @@ typings/
 *.sqlite3
 # Local Netlify folder
 .netlify
+
+# === SSL/TLS Certificates & Keys ===
+# NEVER commit private keys or certificates to version control.
+# These are secrets. Use environment variables, a secrets manager
+# (e.g., HashiCorp Vault, AWS Secrets Manager), or your deployment
+# platform's native secret storage instead.
+*.key
+*.crt
+*.csr
+
+# === SSH Keys ===
+*.pub
+
+# === Runtime Output Logs ===
+nohup.out
