@@ -3,10 +3,6 @@ const visitsController = require('../controllers/visits');
 
 const router = express.Router();
 
-// const ensureAuth = (req, res, next) => (req.isAuthenticated()
-//   ? next()
-//   : res.status(401).json({ status: 401, message: 'Unauthorized' }));
-
 const ensureAuth = (req, res, next) => {
   console.log('=== ensureAuth Middleware ===');
   console.log('req.isAuthenticated():', req.isAuthenticated());
