@@ -9,17 +9,12 @@ const passport = require('passport');
 const { ConnectSessionKnexStore } = require('connect-session-knex');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const cors = require('cors');
-const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const countriesRouter = require('./routes/countries');
 const authenticationRouter = require('./routes/authentication');
 const visitsRouter = require('./routes/visits');
-const tokensRouter = require('./routes/tokens');
 const usersModel = require('./models/users');
 const db = require('./db/db');
-
-// routes views
-// const tokensModels = require('./models/tokens');
 
 require('./passport-config');
 
@@ -63,11 +58,9 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
 const apiPrefix = '/api';
-app.use(`${apiPrefix}/`, indexRouter);
 app.use(`${apiPrefix}/users`, usersRouter);
 app.use(`${apiPrefix}/countries`, countriesRouter);
 app.use(`${apiPrefix}/visits`, visitsRouter);
-app.use(`${apiPrefix}/tokens`, tokensRouter);
 app.use(`${apiPrefix}/authentication`, authenticationRouter);
 
 function errorHandler(err, req, res, next) {

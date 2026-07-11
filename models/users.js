@@ -78,7 +78,6 @@ exports.get_account_status = async (id) => {
 exports.delete_account = async (id) => {
   await db.transaction(async (trx) => {
     await trx('visits').where({ user_id: id }).del();
-    await trx('tokens').where({ user_id: id }).del();
     await trx('sessions').where('sess', 'like', `%"passport":{"user":${id}}%`).del();
     await trx('users').where({ id }).del();
   });
