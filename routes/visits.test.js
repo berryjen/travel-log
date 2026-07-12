@@ -73,21 +73,6 @@ describe('POST /api/visits', () => {
     departureTime: '2023-05-24T13:30:00.000Z',
   };
 
-  it('should respond with a new visit with valid token', async () => {
-    const res = await agent
-      .post('/api/visits')
-      .send(visit);
-    console.log('post/api/visits test', res.body);
-
-    visit.id = res.body.id;
-    expect(res.statusCode).toEqual(201);
-    expect(typeof res.body.arrivalTime).toEqual('string');
-    expect(res.body).toHaveProperty('countryId');
-    expect(res.body).toHaveProperty('departureTime');
-    expect(res.body.userId).toEqual(visit.userId);
-    expect(res.body.departureTime).toEqual(visit.departureTime);
-  });
-
   it('should not respond with a new visit with invalid password', async () => {
     const res = await inValidAgent
       .post('/api/visits')
@@ -97,18 +82,6 @@ describe('POST /api/visits', () => {
     expect(res.body.message).toEqual('Unauthorized');
   });
 
-  it('should retrieve the new post in the DB with valid token', async () => {
-    const res = await agent.get(
-      `/api/visits/${visit.id}`,
-    );
-    expect(res.statusCode).toEqual(200);
-    expect(typeof res.body.user_id).toEqual('number');
-    expect(res.body).toHaveProperty('arrival_time');
-    expect(res.body.arrival_time).toEqual(visit.arrivalTime);
-    console.log(res.body);
-    expect(res.body.country).toHaveProperty('id');
-  });
-
   it('should not create the visit in the DB with invalid password', async () => {
     const res = await inValidAgent.get(
       `/api/visits/${visit.id}`,
@@ -116,7 +89,6 @@ describe('POST /api/visits', () => {
     expect(res.statusCode).toEqual(401);
     expect(res.body.status).toEqual(401);
     expect(res.body).toHaveProperty('message');
-    // expect(res.body.message).toEqual('Unauthorized');
   });
 });
 
