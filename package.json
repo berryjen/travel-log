@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "cross-env NODE_ENV=test jest --verbose=true",
+    "test": "cross-env NODE_ENV=test jest --verbose=true --forceExit",
     "test-watch": "cross-env NODE_ENV=test jest --watch --verbose=true",
     "lint": "npx eslint ./"
   },

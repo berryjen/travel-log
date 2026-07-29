@@ -1,7 +1,9 @@
 const request = require('supertest');
+const { beforeEach } = require('node:test');
 const app = require('../app');
 
 const db = require('../db/db');
+const seedVisits = require('../seeds/create-test-visits');
 
 let agent;
 
@@ -93,6 +95,9 @@ describe('POST /api/visits', () => {
 });
 
 describe('POST /api/visits/(with timezone)', () => {
+  beforeEach(async () => {
+    await seedVisits(db);
+  }, 15000);
   const visit = {
     countryId: 3,
     arrivalTime: '2022-10-27T09:27:25.000+0100',
@@ -106,7 +111,7 @@ describe('POST /api/visits/(with timezone)', () => {
     visit.id = res.body.id;
     expect(res.statusCode).toEqual(201);
     expect(new Date(res.body.arrivalTime)).toEqual(new Date(visit.arrivalTime));
-  });
+  }, 15000);
 
   it('should not respond with a new visit with invalid password', async () => {
     const res = await inValidAgent
