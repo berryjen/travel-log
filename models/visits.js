@@ -24,55 +24,31 @@ exports.get_all = async (userId) => {
     .join('countries', 'visits.country_id', '=', 'countries.id')
     .select(['visits.id', 'user_id', 'country_id', 'name'])
     .where({ 'visits.user_id': userId });
-  console.log('all visits', visits);
-  // all visits [ { id: 13, userId: 1, countryId: 1, name: 'Ascension Island' } ]
-  const newVisits = [];
-  visits.forEach((properties) => {
-    const visits2 = {
-      id: properties.id,
-      user: { id: properties.userId },
-      country: { id: properties.countryId, name: properties.name },
-    };
-    if (typeof properties.userId !== 'number') {
-      return;
-    }
-    newVisits.push(visits2);
-  });
-  console.log('new visits from models', newVisits);
-  return newVisits;
+
+  return visits.map((v) => ({
+    id: v.id,
+    user: { id: v.userId },
+    country: { id: v.countryId, name: v.name },
+  }));
 };
 
 // get_by_id returns all info regarding a single visit
 exports.get_by_id = async (id, userId) => {
-  console.log('get_by_id visit id, userId', id, userId);
   const visit = await db('visits')
     .join('countries', 'visits.country_id', '=', 'countries.id')
     .where({ 'visits.id': id, 'visits.user_id': userId })
     .first();
-  if (visit === undefined) {
+  if (!visit) {
     throw new NotFoundError('visit not found');
   }
-  console.log('visit from get_by_id', visit);
 
-  const atTs = Date.parse(visit.arrivalTime);
-  const dtTs = Date.parse(visit.departureTime);
-  console.log('atTs, dtTs', atTs, dtTs);
-  // Conver these numbers to dates
-  const at = new Date(atTs);
-  const dt = new Date(dtTs);
-  console.log('at, dt', at, dt);
-  // we can now log these
-  visit.arrival_time = at.toISOString();
-  visit.departure_time = dt.toISOString();
-  const singleVisit = {
+  return {
     id: visit.id,
-    user_id: visit.userId,
+    user: { id: visit.userId },
     country: { id: visit.countryId, name: visit.name },
-    departure_time: visit.departureTime,
-    arrival_time: visit.arrivalTime,
+    arrival_time: visit.arrival_time,
+    departure_time: visit.departure_time,
   };
-  console.log('singleVisit from get_by_id', singleVisit);
-  return singleVisit;
 };
 
 // retrieves all visits via userId
@@ -87,34 +63,41 @@ exports.get_by_user_id = async (userId) => {
 // creates & saves a new visit in SQLite DB
 exports.create = async (userId, countryId, arrivalTime, departureTime) => {
   try {
-    const atTs = Date.parse(arrivalTime);
-    const dtTs = Date.parse(departureTime);
-    const at = new Date(atTs);
-    const dt = new Date(dtTs);
+    const at = new Date(arrivalTime);
+    const dt = new Date(departureTime);
 
-    const inserted = await db('visits').returning('id').insert({
-      user_id: userId,
-      country_id: countryId,
-      arrival_time: at.toISOString(),
-      departure_time: dt.toISOString(),
-    });
-    const visit = {
-      id: inserted[0].id,
-      userId,
-      countryId,
-      arrivalTime: at.toISOString(),
-      departureTime: dt.toISOString(),
+    if (Number.isNaN(at.getTime()) || Number.isNaN(dt.getTime())) {
+      throw new Error('Invalid date format');
+    }
+
+    // SQLite insert returns the row id as an array [id]
+    const result = await db('visits').insert(
+      {
+        user_id: userId,
+        country_id: countryId,
+        arrival_time: at.toISOString(),
+        departure_time: dt.toISOString(),
+      },
+    );
+    const visitId = Array.isArray(result) ? result[0] : result;
+
+    // fetch the created row we return complete, correct data
+    const visit = await db('visits').where({ id: visitId }).first();
+
+    return {
+      id: visit.id,
+      userId: visit.user_id,
+      countryId: visit.country_id,
+      arrivalTime: visit.arrival_time,
+      departureTime: visit.departure_time,
     };
-    return visit;
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT') {
       throw new ConstraintIdNullError(
-        `visit can't be created due to null user or country ID; userId='${userId}', countryId='${countryId}`,
+        `visit can't be created due to null user or country ID; userId='${userId}'; countryId='${countryId}'`,
       );
-    } else {
-      console.log('unable to create visit, SQLite error:', err);
-      throw new Error('unable to create visit');
     }
+    throw err;
   }
 };
 
