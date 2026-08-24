@@ -44,8 +44,9 @@ exports.get_by_id = async (id, userId) => {
 
   return {
     id: visit.id,
-    user: { id: visit.userId },
-    country: { id: visit.countryId, name: visit.name },
+    user_id: visit.user_id,
+    country_id: visit.country_id,
+    country: { id: visit.country_id, name: visit.name },
     arrival_time: visit.arrival_time,
     departure_time: visit.departure_time,
   };

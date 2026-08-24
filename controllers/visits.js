@@ -50,8 +50,8 @@ exports.create = async (req, res, next) => {
     const visit = await visitsModel.create(
       req.user.id,
       country.id,
-      req.body.arrival_time,
-      req.body.departure_time,
+      body.arrival_time,
+      body.departure_time,
     );
     return res.status(201).json(visit);
   } catch (err) {
